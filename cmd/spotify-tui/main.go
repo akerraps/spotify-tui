@@ -6,6 +6,7 @@ import (
 	"log"
 
 	authenticate "akerraps/spotify-tui/internal/authenticate"
+	playlists "akerraps/spotify-tui/internal/spotify"
 
 	"github.com/joho/godotenv"
 )
@@ -26,13 +27,5 @@ func main() {
 	}
 	fmt.Println("You are logged in as:", user.ID)
 
-	playlists, _ := client.CurrentUsersPlaylists(ctx)
-	for _, p := range playlists.Playlists {
-		fmt.Println("Playlist:", p.Name)
-		playlistID := p.ID
-
-		fullPlaylist, _ := client.GetPlaylist(ctx, playlistID)
-
-		fmt.Println(fullPlaylist.Tracks)
-	}
+	playlists.ListPlaylists(ctx, client)
 }
