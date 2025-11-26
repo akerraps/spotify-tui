@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	authenticate "akerraps/spotify-tui/authenticate"
+	authenticate "akerraps/spotify-tui/internal/authenticate"
 
 	"github.com/joho/godotenv"
 )
