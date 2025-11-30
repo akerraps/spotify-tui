@@ -13,7 +13,7 @@ import (
 // redirectURI is the OAuth redirect URI for the application.
 // You must register an application at Spotify's developer portal
 // and enter this value.
-const redirectURI = "http://localhost:5000/callback"
+const redirectURI = "http://127.0.0.1:5000/callback"
 
 var (
 	auth  *spotifyauth.Authenticator
