@@ -27,5 +27,11 @@ func main() {
 	}
 	fmt.Println("You are logged in as:", user.ID)
 
-	playlists.ListPlaylists(ctx, client)
+	myPlaylists := playlists.ListPlaylists(ctx, client)
+
+	for _, p := range myPlaylists.Playlists {
+		playlistID := p.ID
+		myPlaylistData := playlists.PlaylistData(ctx, client, playlistID)
+		fmt.Println(myPlaylistData)
+	}
 }

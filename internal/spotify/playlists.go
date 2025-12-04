@@ -2,19 +2,16 @@ package playlists
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/zmb3/spotify/v2"
 )
 
-func ListPlaylists(ctx context.Context, client *spotify.Client) {
+func ListPlaylists(ctx context.Context, client *spotify.Client) spotify.SimplePlaylistPage {
 	playlists, _ := client.CurrentUsersPlaylists(ctx)
-	for _, p := range playlists.Playlists {
-		fmt.Println("Playlist:", p.Name)
-		playlistID := p.ID
+	return *playlists
+}
 
-		fullPlaylist, _ := client.GetPlaylist(ctx, playlistID)
-
-		fmt.Println(fullPlaylist.Tracks)
-	}
+func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotify.ID) spotify.FullPlaylist {
+	fullPlaylist, _ := client.GetPlaylist(ctx, playlistID)
+	return *fullPlaylist
 }
