@@ -2,6 +2,7 @@ package playlists
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/zmb3/spotify/v2"
 )
@@ -14,4 +15,10 @@ func ListPlaylists(ctx context.Context, client *spotify.Client) spotify.SimplePl
 func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotify.ID) spotify.FullPlaylist {
 	fullPlaylist, _ := client.GetPlaylist(ctx, playlistID)
 	return *fullPlaylist
+}
+
+func PlaylistTracks(playlist spotify.FullPlaylist) {
+	for _, entry := range playlist.Tracks.Tracks {
+		fmt.Println(entry.Track.Name)
+	}
 }
