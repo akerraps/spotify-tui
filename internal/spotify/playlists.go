@@ -19,6 +19,6 @@ func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotif
 
 func PlaylistTracks(playlist spotify.FullPlaylist) {
 	for _, entry := range playlist.Tracks.Tracks {
-		fmt.Println(entry.Track.Name)
+		fmt.Printf("Track name: %s, artist: %s \n", entry.Track.Name, entry.Track.Artists[0].Name)
 	}
 }
