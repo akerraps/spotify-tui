@@ -2,10 +2,14 @@ package playlists
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/zmb3/spotify/v2"
 )
+
+type TrackInfo struct {
+	Name    string
+	Artists []string
+}
 
 func ListPlaylists(ctx context.Context, client *spotify.Client) spotify.SimplePlaylistPage {
 	playlists, _ := client.CurrentUsersPlaylists(ctx)
@@ -17,8 +21,18 @@ func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotif
 	return *fullPlaylist
 }
 
-func PlaylistTracks(playlist spotify.FullPlaylist) {
+func PlaylistTracks(playlist spotify.FullPlaylist) []TrackInfo {
+	results := []TrackInfo{}
 	for _, entry := range playlist.Tracks.Tracks {
-		fmt.Printf("Track name: %s, artist: %s \n", entry.Track.Name, entry.Track.Artists[0].Name)
+		artists := []string{}
+		for i := range entry.Track.Artists {
+			artists = append(artists, entry.Track.Artists[i].Name)
+		}
+		info := TrackInfo{
+			Name:    entry.Track.Name,
+			Artists: artists,
+		}
+		results = append(results, info)
 	}
+	return results
 }

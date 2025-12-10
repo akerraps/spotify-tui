@@ -32,6 +32,7 @@ func main() {
 	for _, p := range myPlaylists.Playlists {
 		playlistID := p.ID
 		myPlaylistData := playlists.PlaylistData(ctx, client, playlistID)
-		playlists.PlaylistTracks(myPlaylistData)
+		myTrackInfo := playlists.PlaylistTracks(myPlaylistData)
+		fmt.Println(myTrackInfo)
 	}
 }
