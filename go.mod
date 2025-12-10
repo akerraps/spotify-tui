@@ -1,4 +1,4 @@
-module akerraps/spotify-tui
+module akerraps/tunectl
 
 go 1.25.4
 

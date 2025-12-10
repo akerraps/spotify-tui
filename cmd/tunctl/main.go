@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	authenticate "akerraps/spotify-tui/internal/authenticate"
-	playlists "akerraps/spotify-tui/internal/spotify"
+	authenticate "akerraps/tunectl/internal/authenticate"
+	playlists "akerraps/tunectl/internal/spotify"
 
 	"github.com/joho/godotenv"
 )
