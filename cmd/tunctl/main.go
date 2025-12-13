@@ -11,6 +11,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	"github.com/zmb3/spotify/v2"
 )
 
 func init() {
@@ -27,23 +28,6 @@ func NewApp(ctx context.Context) *App {
 	}
 }
 
-func (a *App) RunTasks(ctx context.Context) error {
-	authenticate.InitAuth()
-	client := authenticate.StartLogin()
-
-	// use the client to make calls that require authorization
-	user, err := client.CurrentUser(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("You are logged in as:", user.ID)
-
-	myPlaylists := playlists.ListPlaylists(ctx, client)
-
-	fmt.Println(myPlaylists)
-	return nil
-}
-
 func main() {
 	ctx := context.Background()
 
@@ -55,13 +39,54 @@ func main() {
 			{
 				Name: "playlists",
 				Action: func(c *cli.Context) error {
-					return appCore.RunTasks(c.Context)
+					return appCore.RunPlaylists(c.Context)
+				},
+			},
+			{
+				Name:      "songs",
+				Usage:     "Lists songs from a specefied playlist",
+				ArgsUsage: "<playlist>",
+				Action: func(c *cli.Context) error {
+					if c.NArg() < 1 {
+						return fmt.Errorf("you must specify a playlist")
+					}
+
+					playlist := c.Args().Get(0)
+
+					fmt.Println("Playlist", playlist)
+					return nil
 				},
 			},
 		},
 	}
+	err := cliApp.RunContext(ctx, os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-	cliApp.RunContext(ctx, os.Args)
+func auth(ctx context.Context) *spotify.Client {
+	authenticate.InitAuth()
+	client := authenticate.StartLogin()
+
+	// use the client to make calls that require authorization
+	user, err := client.CurrentUser(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("You are logged in as:", user.ID)
+
+	return client
+}
+
+func (a *App) RunPlaylists(ctx context.Context) error {
+	client := auth(ctx)
+	myPlaylists := playlists.ListPlaylists(ctx, client)
+
+	for _, p := range myPlaylists.Playlists {
+		fmt.Printf("Playlist found: %s\n", p.Name)
+	}
+	return nil
 }
 
 // func main() {
