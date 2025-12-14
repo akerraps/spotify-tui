@@ -1,6 +1,7 @@
 package authenticate
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,7 +22,21 @@ var (
 	state = "abc123"
 )
 
-func InitAuth() {
+func Auth(ctx context.Context) *spotify.Client {
+	initAuth()
+	client := startLogin()
+
+	// use the client to make calls that require authorization
+	user, err := client.CurrentUser(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("You are logged in as:", user.ID)
+
+	return client
+}
+
+func initAuth() {
 	auth = spotifyauth.New(
 		spotifyauth.WithClientID(os.Getenv("SPOTIFY_ID")),
 		spotifyauth.WithClientSecret(os.Getenv("SPOTIFY_SECRET")),
@@ -30,7 +45,7 @@ func InitAuth() {
 	)
 }
 
-func StartLogin() *spotify.Client {
+func startLogin() *spotify.Client {
 	// first start an HTTP server
 	http.HandleFunc("/callback", completeAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
