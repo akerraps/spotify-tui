@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	appcli "akerraps/tunectl/internal/cli"
+	Core "akerraps/tunectl/internal/cli"
 
 	"github.com/joho/godotenv"
 	urfave "github.com/urfave/cli/v2"
@@ -16,8 +16,8 @@ func init() {
 	godotenv.Load()
 }
 
-func NewApp(ctx context.Context) *appcli.App {
-	return &appcli.App{
+func NewApp(ctx context.Context) *Core.Core {
+	return &Core.Core{
 		Name: "Tunectl",
 	}
 }

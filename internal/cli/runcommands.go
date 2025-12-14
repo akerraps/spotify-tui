@@ -8,11 +8,11 @@ import (
 	playlists "akerraps/tunectl/internal/spotify"
 )
 
-type App struct {
+type Core struct {
 	Name string
 }
 
-func (a *App) RunPlaylists(ctx context.Context) error {
+func (a *Core) RunPlaylists(ctx context.Context) error {
 	client := authenticate.Auth(ctx)
 	myPlaylists := playlists.ListPlaylists(ctx, client)
 
@@ -22,7 +22,7 @@ func (a *App) RunPlaylists(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) RunSogns(ctx context.Context, playlistName string) error {
+func (a *Core) RunSogns(ctx context.Context, playlistName string) error {
 	client := authenticate.Auth(ctx)
 	myPlaylists := playlists.ListPlaylists(ctx, client)
 
