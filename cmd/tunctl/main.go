@@ -18,17 +18,23 @@ func init() {
 
 func NewApp(ctx context.Context) *Core.Core {
 	return &Core.Core{
-		Name: "Tunectl",
+		Name: "TuneCtl",
 	}
 }
 
 func main() {
+	if len(os.Args) > 1 {
+		runTui()
+	}
+}
+
+func runTui() {
 	ctx := context.Background()
 
 	appCore := NewApp(ctx)
 
 	cliApp := &urfave.App{
-		Name: "Tunectl",
+		Name: "TuneCtl",
 		Commands: []*urfave.Command{
 			{
 				Name: "playlists",
@@ -52,6 +58,7 @@ func main() {
 			},
 		},
 	}
+
 	err := cliApp.RunContext(ctx, os.Args)
 	if err != nil {
 		log.Fatal(err)
