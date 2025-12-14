@@ -6,23 +6,18 @@ import (
 	"log"
 	"os"
 
-	"akerraps/tunectl/internal/authenticate"
-	playlists "akerraps/tunectl/internal/spotify"
+	appcli "akerraps/tunectl/internal/cli"
 
 	"github.com/joho/godotenv"
-	"github.com/urfave/cli/v2"
+	urfave "github.com/urfave/cli/v2"
 )
 
 func init() {
 	godotenv.Load()
 }
 
-type App struct {
-	Name string
-}
-
-func NewApp(ctx context.Context) *App {
-	return &App{
+func NewApp(ctx context.Context) *appcli.App {
+	return &appcli.App{
 		Name: "Tunectl",
 	}
 }
@@ -32,12 +27,12 @@ func main() {
 
 	appCore := NewApp(ctx)
 
-	cliApp := &cli.App{
+	cliApp := &urfave.App{
 		Name: "Tunectl",
-		Commands: []*cli.Command{
+		Commands: []*urfave.Command{
 			{
 				Name: "playlists",
-				Action: func(c *cli.Context) error {
+				Action: func(c *urfave.Context) error {
 					return appCore.RunPlaylists(c.Context)
 				},
 			},
@@ -45,7 +40,7 @@ func main() {
 				Name:      "songs",
 				Usage:     "Lists songs from a specefied playlist",
 				ArgsUsage: "<playlist>",
-				Action: func(c *cli.Context) error {
+				Action: func(c *urfave.Context) error {
 					if c.NArg() < 1 {
 						return fmt.Errorf("you must specify a playlist")
 					}
@@ -61,29 +56,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func (a *App) RunPlaylists(ctx context.Context) error {
-	client := authenticate.Auth(ctx)
-	myPlaylists := playlists.ListPlaylists(ctx, client)
-
-	for _, p := range myPlaylists.Playlists {
-		fmt.Printf("Playlist found: %s\n", p.Name)
-	}
-	return nil
-}
-
-func (a *App) RunSogns(ctx context.Context, playlistName string) error {
-	client := authenticate.Auth(ctx)
-	myPlaylists := playlists.ListPlaylists(ctx, client)
-
-	for _, p := range myPlaylists.Playlists {
-		if playlistName == p.Name {
-			playlistID := p.ID
-			myPlaylistData := playlists.PlaylistData(ctx, client, playlistID)
-			myTrackInfo := playlists.PlaylistTracks(myPlaylistData)
-			fmt.Println(myTrackInfo)
-		}
-	}
-	return nil
 }

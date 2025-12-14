@@ -3,10 +3,17 @@ package runcommands
 import (
 	"context"
 	"fmt"
+
+	"akerraps/tunectl/internal/authenticate"
+	playlists "akerraps/tunectl/internal/spotify"
 )
 
+type App struct {
+	Name string
+}
+
 func (a *App) RunPlaylists(ctx context.Context) error {
-	client := auth(ctx)
+	client := authenticate.Auth(ctx)
 	myPlaylists := playlists.ListPlaylists(ctx, client)
 
 	for _, p := range myPlaylists.Playlists {
@@ -16,7 +23,7 @@ func (a *App) RunPlaylists(ctx context.Context) error {
 }
 
 func (a *App) RunSogns(ctx context.Context, playlistName string) error {
-	client := auth(ctx)
+	client := authenticate.Auth(ctx)
 	myPlaylists := playlists.ListPlaylists(ctx, client)
 
 	for _, p := range myPlaylists.Playlists {
