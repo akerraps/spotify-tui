@@ -26,13 +26,21 @@ func (a *App) RunSogns(ctx context.Context, playlistName string) error {
 	client := authenticate.Auth(ctx)
 	myPlaylists := playlists.ListPlaylists(ctx, client)
 
+	found := false
 	for _, p := range myPlaylists.Playlists {
 		if playlistName == p.Name {
+			found = true
 			playlistID := p.ID
-			myPlaylistData := playlists.PlaylistData(ctx, client, playlistID)
+			myPlaylistData, err := playlists.PlaylistData(ctx, client, playlistID)
+			if err != nil {
+				return err
+			}
 			myTrackInfo := playlists.PlaylistTracks(myPlaylistData)
 			fmt.Println(myTrackInfo)
 		}
+	}
+	if !found {
+		return fmt.Errorf("playlist %q not found", playlistName)
 	}
 	return nil
 }

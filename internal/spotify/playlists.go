@@ -16,9 +16,13 @@ func ListPlaylists(ctx context.Context, client *spotify.Client) spotify.SimplePl
 	return *playlists
 }
 
-func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotify.ID) spotify.FullPlaylist {
-	fullPlaylist, _ := client.GetPlaylist(ctx, playlistID)
-	return *fullPlaylist
+func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotify.ID) (spotify.FullPlaylist, error) {
+	fullPlaylist, err := client.GetPlaylist(ctx, playlistID)
+	if err != nil {
+		return spotify.FullPlaylist{}, err
+	}
+
+	return *fullPlaylist, nil
 }
 
 func PlaylistTracks(playlist spotify.FullPlaylist) []TrackInfo {
