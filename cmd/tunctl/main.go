@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"akerraps/tunectl/internal/cli"
+	"akerraps/tunectl/internal/tui"
 
 	"github.com/joho/godotenv"
 )
@@ -14,6 +15,8 @@ func init() {
 
 func main() {
 	if len(os.Args) > 1 {
-		cli.RunTui()
+		cli.RunCli()
+	} else {
+		tui.RunTui()
 	}
 }

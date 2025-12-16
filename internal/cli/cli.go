@@ -17,7 +17,7 @@ func NewApp(ctx context.Context) *core.Service {
 	}
 }
 
-func RunTui() {
+func RunCli() {
 	ctx := context.Background()
 
 	appCore := NewApp(ctx)

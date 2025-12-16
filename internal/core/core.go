@@ -9,7 +9,7 @@ type Service struct {
 	Name string
 }
 
-func (a *Service) RunPlaylists(ctx context.Context) error {
+func (s *Service) RunPlaylists(ctx context.Context) error {
 	client := Auth(ctx)
 	myPlaylists := ListPlaylists(ctx, client)
 
@@ -19,7 +19,7 @@ func (a *Service) RunPlaylists(ctx context.Context) error {
 	return nil
 }
 
-func (a *Service) RunSogns(ctx context.Context, playlistName string) error {
+func (s *Service) RunSogns(ctx context.Context, playlistName string) error {
 	client := Auth(ctx)
 	myPlaylists := ListPlaylists(ctx, client)
 
