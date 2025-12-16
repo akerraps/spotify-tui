@@ -1,4 +1,4 @@
-package playlists
+package core
 
 import (
 	"context"
