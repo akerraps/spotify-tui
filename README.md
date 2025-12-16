@@ -1,22 +1,43 @@
 # tunectl – Terminal Spotify Playlist Manager (Learning Project)
 
-tunectl is a personal project I’m building to learn Go.
-The goal is to create a terminal-based user interface (TUI) that lets me interact with the Spotify Web API to explore and organize my personal music library in local.
+TuneCtl is a personal learning project written in Go.
+The goal is to explore different ways of interacting with the Spotify Web API from the terminal, using both a classic CLI and (eventually) a full TUI.
 
-This is not a production-ready tool. It’s an experimental sandbox where I try out Go, APIs, and different ways of handling data. The code is likely messy, incomplete, or broken in places — that’s part of the learning process.
+This is not a production-ready tool. It’s an experimental sandbox where I learn Go, project structure, APIs, and terminal UX. The code may be messy, incomplete, or broken in places — that’s intentional and part of the process.
 
 ## Project Goal
 
-The main purpose is learning and experimentation. Specifically, I want to:
+The main purpose of this project is learning and experimentation. In particular, I want to:
 
-[x] Connect and authenticate with the Spotify Web API.
-[x] Retrieve information about my account: playlists, tracks, artists, etc.
-[] Export personal data (e.g., to CSV) for analysis or organization.
-[] Provide tools in the TUI to sort, browse, and manage my music library in a convenient way.
+- [x] Authenticate with the Spotify Web API
+- [x] Fetch user playlists
+- [x] Fetch tracks from a specific playlist
+- [ ] Add a terminal UI (TUI) using Bubble Tea
+- [ ] Export personal data (CSV / JSON)
+- [ ] Add local caching to avoid repeated API calls
+- [ ] Improve error handling and UX
+- [ ] Experiment with clean project architecture in Go
+- [ ] Be able to download songs locally
 
->Note: All interactions are done through official Spotify API endpoints and within their terms of service. This project is intended for personal use and learning only.
+>Note: All interactions are done through official Spotify Web API endpoints and within Spotify’s terms of service. This project is for personal use and learning only.
+>
+## Project Structure (High-Level)
 
-## Usage / Getting Started
+```
+cmd/
+  tunctl/        → Application entrypoint (main)
+internal/
+  core/          → Business logic (Spotify auth, playlists, tracks)
+  cli/           → CLI layer (urfave/cli commands)
+```
+
+- core: does the real work (Spotify API, data handling)
+- cli: wires commands and arguments to the core
+- cmd/tunctl: decides how the app runs (CLI vs TUI)
+
+This separation is intentional so the same core logic can be reused by both CLI and TUI.
+
+## Getting Started
 
 To use tunectl, you need to have a Spotify Developer account and create an application to obtain your credentials.
 
@@ -33,6 +54,31 @@ SPOTIFY_SECRET=your_client_secret_here
 
 >Note: This project only accesses your own Spotify data for personal organization and learning purposes.
 
+## Usage
+
+### Available Commands
+
+**List playlists**
+
+```bash
+go run cmd/tunctl/main.go playlists
+```
+
+Outputs all playlists associated with your Spotify account.
+
+**List songs from a playlist**
+
+```bash
+go run cmd/tunctl/main.go songs "<playlist name>"
+```
+
+## Planned TUI Behavior
+
+In the future:
+
+- Running tunectl with no arguments will launch a TUI
+- Running it with arguments will keep using the CLI
+
 ## Disclaimer
 
 This is a learning project. Expect:
@@ -42,5 +88,3 @@ This is a learning project. Expect:
 - Nothing is stable or production-ready.
 
 If you’re looking for a reliable Spotify manager, this is not it.
-
-If you’re interested in following along as I learn Go and experiment with the Spotify API, you’re welcome to explore.
