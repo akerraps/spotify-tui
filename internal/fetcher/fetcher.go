@@ -2,12 +2,44 @@ package fetcher
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/go-getter"
 	"github.com/kkdai/youtube/v2"
 )
+
+func TcheckDependencies() error {
+	currentUser, err1 := user.Current()
+	if err1 != nil {
+		return err1
+	}
+
+	binary := "yt-dlp"
+	cachePath := fmt.Sprintf("/home/%s/.cache/tunectl/", currentUser.Username)
+
+	client := &getter.Client{
+		Dst:   cachePath + binary,
+		Src:   "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
+		Mode:  getter.ClientModeFile,
+		Umask: 0o077,
+	}
+
+	if err2 := client.Get(); err2 != nil {
+		return err2
+	}
+
+	path := filepath.Join(cachePath, "yt-dlp")
+	if err3 := os.Chmod(path, 0o700); err3 != nil {
+		return fmt.Errorf("cannot make yt-dlp executable: %w", err3)
+	}
+
+	return nil
+}
 
 func FetchAudio(videoID string) error {
 	client := youtube.Client{}

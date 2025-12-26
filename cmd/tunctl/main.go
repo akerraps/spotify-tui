@@ -1,10 +1,11 @@
 package main
 
 import (
+	"log"
 	"os"
 
-	"akerraps/tunectl/fetcher"
 	"akerraps/tunectl/internal/cli"
+	"akerraps/tunectl/internal/fetcher"
 
 	"github.com/joho/godotenv"
 )
@@ -17,7 +18,11 @@ func main() {
 	if len(os.Args) > 1 {
 		cli.RunCli()
 	} else {
-		fetcher.FetchAudio("")
+		err := fetcher.TcheckDependencies()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fetcher.FetchAudio("")
 		// tui.RunTui()
 	}
 }
