@@ -18,7 +18,7 @@ func main() {
 	if len(os.Args) > 1 {
 		cli.RunCli()
 	} else {
-		err := fetcher.TcheckDependencies()
+		err := fetcher.FetchAudio("")
 		if err != nil {
 			log.Fatal(err)
 		}
