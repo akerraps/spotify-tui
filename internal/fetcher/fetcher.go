@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 
 	"github.com/hashicorp/go-getter"
 )
 
-func checkDependencies() error {
+func checkDependencies() (binPath string, err error) {
 	currentUser, err := user.Current()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	binary := "yt-dlp"
@@ -22,23 +23,31 @@ func checkDependencies() error {
 	if _, err := os.Stat(cachePath + binary); os.IsNotExist(err) {
 		log.Println("Getting yt-dlp dependency")
 		if err := getter.GetAny(cachePath, "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"); err != nil {
-			return err
+			return "", err
 		}
 
 		path := filepath.Join(cachePath, "yt-dlp")
 		if err := os.Chmod(path, 0o700); err != nil {
-			return fmt.Errorf("cannot make yt-dlp executable: %w", err)
+			return "", fmt.Errorf("cannot make yt-dlp executable: %w", err)
 		}
 	}
 
-	return nil
+	return cachePath + binary, nil
 }
 
 func FetchAudio(videoID string) error {
-	err := checkDependencies()
+	bin, err := checkDependencies()
 	if err != nil {
 		return err
 	}
+
+	cmd := exec.Command(bin, "-h")
+
+	stdout, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(stdout))
 
 	return nil
 }
