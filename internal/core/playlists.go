@@ -11,12 +11,12 @@ type TrackInfo struct {
 	Artists []string
 }
 
-func ListPlaylists(ctx context.Context, client *spotify.Client) spotify.SimplePlaylistPage {
+func listPlaylists(ctx context.Context, client *spotify.Client) spotify.SimplePlaylistPage {
 	playlists, _ := client.CurrentUsersPlaylists(ctx)
 	return *playlists
 }
 
-func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotify.ID) (spotify.FullPlaylist, error) {
+func playlistData(ctx context.Context, client *spotify.Client, playlistID spotify.ID) (spotify.FullPlaylist, error) {
 	fullPlaylist, err := client.GetPlaylist(ctx, playlistID)
 	if err != nil {
 		return spotify.FullPlaylist{}, err
@@ -25,7 +25,7 @@ func PlaylistData(ctx context.Context, client *spotify.Client, playlistID spotif
 	return *fullPlaylist, nil
 }
 
-func PlaylistTracks(playlist spotify.FullPlaylist) []TrackInfo {
+func tracks(playlist spotify.FullPlaylist) []TrackInfo {
 	results := []TrackInfo{}
 	for _, entry := range playlist.Tracks.Tracks {
 		artists := []string{}
