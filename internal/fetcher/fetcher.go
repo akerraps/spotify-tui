@@ -38,7 +38,7 @@ func checkDependencies() (binPath string, err error) {
 	return cachePath + binary, nil
 }
 
-func FetchAudio(tracks []types.TrackInfo) error {
+func FetchAudio(tracks []types.TrackInfo, out string) error {
 	bin, err := checkDependencies()
 	if err != nil {
 		return err
@@ -48,7 +48,8 @@ func FetchAudio(tracks []types.TrackInfo) error {
 
 		name := song.Name
 		artist := strings.Join(song.Artists, " ")
-		cmd := exec.Command(bin, "-x", "-f", "bestaudio", "ytsearch:"+name+" "+artist)
+		output := out + name
+		cmd := exec.Command(bin, "-x", "-f", "bestaudio", "ytsearch:"+name+" "+artist, "-o", output)
 
 		stdout, err := cmd.Output()
 		if err != nil {

@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"akerraps/tunectl/internal/fetcher"
 )
@@ -21,7 +22,7 @@ func (s *Service) RunPlaylists(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) RunSongs(ctx context.Context, playlistName string) error {
+func (s *Service) RunSongs(ctx context.Context, playlistName string, download bool, out string) error {
 	client := Auth(ctx)
 	myPlaylists := listPlaylists(ctx, client)
 
@@ -36,7 +37,17 @@ func (s *Service) RunSongs(ctx context.Context, playlistName string) error {
 			}
 			myTrackInfo := tracks(myPlaylistData)
 
-			fetcher.FetchAudio(myTrackInfo)
+			if download {
+				fetcher.FetchAudio(myTrackInfo, out)
+			} else {
+				for _, song := range myTrackInfo {
+
+					name := song.Name
+					artist := strings.Join(song.Artists, " ")
+
+					fmt.Printf("Song name: %s, Artists: %s\n", name, artist)
+				}
+			}
 		}
 	}
 	if !found {
