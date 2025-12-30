@@ -7,6 +7,9 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"strings"
+
+	"akerraps/tunectl/internal/types"
 
 	"github.com/hashicorp/go-getter"
 )
@@ -35,19 +38,24 @@ func checkDependencies() (binPath string, err error) {
 	return cachePath + binary, nil
 }
 
-func FetchAudio(videoID string) error {
+func FetchAudio(tracks []types.TrackInfo) error {
 	bin, err := checkDependencies()
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(bin, "-h")
+	for _, song := range tracks {
 
-	stdout, err := cmd.Output()
-	if err != nil {
-		return err
+		name := song.Name
+		artist := strings.Join(song.Artists, " ")
+		cmd := exec.Command(bin, "-x", "-f", "bestaudio", "ytsearch:"+name+" "+artist)
+
+		stdout, err := cmd.Output()
+		if err != nil {
+			return err
+		}
+		log.Println(string(stdout))
 	}
-	fmt.Println(string(stdout))
 
 	return nil
 }

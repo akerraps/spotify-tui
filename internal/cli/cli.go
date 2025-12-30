@@ -32,7 +32,7 @@ func RunCli() {
 				},
 			},
 			{
-				Name:      "songs",
+				Name:      "list",
 				Usage:     "Lists songs from a specefied playlist",
 				ArgsUsage: "<playlist>",
 				Action: func(c *urfave.Context) error {
@@ -42,7 +42,7 @@ func RunCli() {
 
 					playlist := c.Args().Get(0)
 
-					return appCore.RunSogns(c.Context, playlist)
+					return appCore.RunSongs(c.Context, playlist)
 				},
 			},
 		},
