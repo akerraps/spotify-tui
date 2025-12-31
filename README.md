@@ -41,7 +41,6 @@ Using yt-dlp provides several advantages:
 ## Project Structure (High-Level)
 
 ```
-
 .
 ├── cmd
 │   └── tunctl
@@ -101,7 +100,7 @@ go run cmd/tunctl/main.go -h
 
 Output:
 
-```bash
+```
 NAME:
    tunectl - Manage your playlists and songs
 
