@@ -48,8 +48,12 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 		name := song.Name
 		artist := strings.Join(song.Artists, " ")
-		output := out + name
-		cmd := exec.Command(bin, "-x", "-f", "bestaudio", "ytsearch:"+name+" "+artist, "-o", output)
+		output := filepath.Join(out, name)
+		cmd := exec.Command(bin,
+			"-x",
+			"-f", "bestaudio",
+			"ytsearch:"+name+" "+artist,
+			"-o", output)
 
 		stdout, err := cmd.Output()
 		if err != nil {

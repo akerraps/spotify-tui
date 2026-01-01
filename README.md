@@ -176,7 +176,7 @@ Flags:
 
 There is still a lot to do. At minimum:
 
-- [ ] Validate user inputs
+- [x] Validate user inputs
 - [ ] Implement the TUI
 - [ ] Allow choosing audio download format
 - [ ] Check if a song already exists before downloading
