@@ -31,7 +31,7 @@ func checkDependencies() (string, error) {
 			return "", fmt.Errorf("cannot create cache dir: %w", err)
 		}
 
-		if err := getter.GetAny(cachePath, "https://github.com/yt-dlp/yt-dlp/releases/latest/diownload/yt-dlp"); err != nil {
+		if err := getter.GetAny(cachePath, "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"); err != nil {
 			return "", fmt.Errorf("failed to download yt-dlp: %w", err)
 		}
 
