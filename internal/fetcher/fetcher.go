@@ -14,28 +14,33 @@ import (
 	"github.com/hashicorp/go-getter"
 )
 
-func checkDependencies() (binPath string, err error) {
+func checkDependencies() (string, error) {
 	currentUser, err := user.Current()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot get current user: %w", err)
 	}
 
 	binary := "yt-dlp"
 	cachePath := fmt.Sprintf("/home/%s/.cache/tunectl/", currentUser.Username)
+	path := filepath.Join(cachePath, binary)
 
-	if _, err := os.Stat(cachePath + binary); os.IsNotExist(err) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		log.Println("Getting yt-dlp dependency")
-		if err := getter.GetAny(cachePath, "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"); err != nil {
-			return "", err
+
+		if err := os.MkdirAll(cachePath, 0o755); err != nil {
+			return "", fmt.Errorf("cannot create cache dir: %w", err)
 		}
 
-		path := filepath.Join(cachePath, "yt-dlp")
+		if err := getter.GetAny(cachePath, "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"); err != nil {
+			return "", fmt.Errorf("failed to download yt-dlp: %w", err)
+		}
+
 		if err := os.Chmod(path, 0o700); err != nil {
 			return "", fmt.Errorf("cannot make yt-dlp executable: %w", err)
 		}
 	}
 
-	return cachePath + binary, nil
+	return path, nil
 }
 
 func FetchAudio(tracks []types.TrackInfo, out string) error {
@@ -57,8 +62,10 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 		stdout, err := cmd.Output()
 		if err != nil {
-			return err
+			log.Printf("failed to fetch %s - %s: %v", name, artist, err)
+			continue
 		}
+
 		log.Println(string(stdout))
 	}
 
