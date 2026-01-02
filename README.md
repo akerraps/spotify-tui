@@ -108,6 +108,7 @@ USAGE:
    tunectl [global options] command [command options]
 
 COMMANDS:
+   cache      Manage cache
    playlists  Manage playlists
    songs      Manage songs
    help, h    Shows a list of commands or help for one command
@@ -172,6 +173,17 @@ Flags:
 - `--download` → Download specific songs by name
 - `--output, -o` → Target directory for downloads (required for download)
 
+### `cache` command
+
+Clears cache.
+
+```bash
+go run cmd/tunctl/main.go cache --clear
+```
+
+- Deletes previously downloaded yt-dlp
+- TODO: When API calls are cached, clear them
+
 ## Pending Work (Minimum TODO)
 
 There is still a lot to do. At minimum:
@@ -179,7 +191,7 @@ There is still a lot to do. At minimum:
 - [x] Validate user inputs
 - [ ] Implement the TUI
 - [ ] Allow choosing audio download format
-- [ ] Check if a song already exists before downloading
+- [x] Check if a song already exists before downloading
 - [ ] Improve Spotify permissions (currently limited scopes)
 - [ ] Add metadata to downloaded files (artist, album, genres, etc.)
 - [ ] Organize downloads into folders (artist / album / playlist)
