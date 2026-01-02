@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"akerraps/tunectl/internal/cache"
 	"akerraps/tunectl/internal/core"
 	"akerraps/tunectl/internal/fetcher"
 	"akerraps/tunectl/internal/types"
@@ -29,16 +30,36 @@ func RunCli() {
 		Usage: "Manage your playlists and songs",
 		Commands: []*urfave.Command{
 			{
+				Name:  "cache",
+				Usage: "Manage cache",
+				Flags: []urfave.Flag{
+					&urfave.BoolFlag{
+						Name:    "clear",
+						Aliases: []string{"c"},
+						Usage:   "Clear cache",
+					},
+				},
+				Action: func(c *urfave.Context) error {
+					if c.Bool("clear") {
+						return cache.ClearYtDlp()
+					} else {
+						return fmt.Errorf("no valid flag provided")
+					}
+				},
+			},
+			{
 				Name:  "playlists",
 				Usage: "Manage playlists",
 				Flags: []urfave.Flag{
 					&urfave.BoolFlag{
-						Name:  "list",
-						Usage: "List all playlists",
+						Name:    "list",
+						Aliases: []string{"l"},
+						Usage:   "List all playlists",
 					},
 					&urfave.BoolFlag{
-						Name:  "download",
-						Usage: "Download songs from a playlist",
+						Name:    "download",
+						Aliases: []string{"d"},
+						Usage:   "Download songs from a playlist",
 					},
 					&urfave.StringFlag{
 						Name:    "output",
@@ -73,12 +94,14 @@ func RunCli() {
 				ArgsUsage: "<playlist>",
 				Flags: []urfave.Flag{
 					&urfave.BoolFlag{
-						Name:  "list",
-						Usage: "List songs in a playlist",
+						Name:    "list",
+						Aliases: []string{"l"},
+						Usage:   "List songs in a playlist",
 					},
 					&urfave.BoolFlag{
-						Name:  "download",
-						Usage: "Download a song by name",
+						Name:    "download",
+						Aliases: []string{"d"},
+						Usage:   "Download a song by name",
 					},
 					&urfave.StringFlag{
 						Name:    "output",
