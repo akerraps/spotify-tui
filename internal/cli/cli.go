@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"akerraps/tunectl/internal/cache"
 	"akerraps/tunectl/internal/core"
@@ -128,10 +129,13 @@ func RunCli() {
 						args := c.Args().Slice()
 
 						tracks := make([]types.TrackInfo, 0, len(args))
-						for _, name := range args {
+						for _, song := range args {
+							name := strings.Split(song, ";")[0]
+							artist := []string{}
+							artist = append(artist, strings.Split(song, ";")[1])
 							tracks = append(tracks, types.TrackInfo{
 								Name:    name,
-								Artists: nil,
+								Artists: artist,
 							})
 						}
 
