@@ -130,12 +130,17 @@ func RunCli() {
 
 						tracks := make([]types.TrackInfo, 0, len(args))
 						for _, song := range args {
-							name := strings.Split(song, ";")[0]
-							artist := []string{}
-							artist = append(artist, strings.Split(song, ";")[1])
+
+							name, artistName, found := strings.Cut(song, ";")
+
+							artists := []string{}
+							if found {
+								artists = append(artists, artistName)
+							}
+
 							tracks = append(tracks, types.TrackInfo{
 								Name:    name,
-								Artists: artist,
+								Artists: artists,
 							})
 						}
 
