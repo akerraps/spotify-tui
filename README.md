@@ -121,6 +121,8 @@ GLOBAL OPTIONS:
 
 Manage Spotify playlists.
 
+>Note: Every search by playlist name it is case sensitive
+
 **List playlists**
 
 ```bash
@@ -157,14 +159,15 @@ go run cmd/tunctl/main.go songs --list "<playlist name>"
 
 Displays all tracks in the given playlist.
 
-**Download specific songs by name**
+**Download specific songs by name and artist**
 
 ```bash
-go run cmd/tunctl/main.go songs --download "<playlist>" "Song Name 1" "Song Name 2" --output ./music
+go run cmd/tunctl/main.go songs --download "Song Name 1" "Song Name 2;Artist 2" --output ./music
 ```
 
 - Downloads only the specified songs
 - Matches songs by name
+- If ";" used, uses the second part to search for the artist
 - Requires an output directory
 
 Flags:
