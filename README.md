@@ -88,7 +88,7 @@ SPOTIFY_SECRET=your_client_secret_here
 
 4. Run tunectl from your terminal. The application will use these credentials to connect to your Spotify account.
 
->Note: This project only accesses your own Spotify data for personal organization and learning purposes.
+>Note: This project only accesses your own Spotify data for personal purposes. Use it at your own risk.
 
 ## Usage
 

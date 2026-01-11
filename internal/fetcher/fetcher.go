@@ -47,7 +47,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			"--windows-filenames",
 			"--quiet",
 			"--no-warnings",
-			"-f", "bestaudio",
+			"-t", "mp3",
 			"ytsearch:"+name+" "+artist,
 			"-o", output)
 
