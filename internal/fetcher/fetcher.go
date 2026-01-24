@@ -26,7 +26,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 	for _, song := range tracks {
 
-		name := song.Name
+		name := song.Title
 		artist := strings.Join(song.Artists, " ")
 		output := filepath.Join(out, name)
 

@@ -26,15 +26,19 @@ func playlistData(ctx context.Context, client *spotify.Client, playlistID spotif
 
 func tracks(playlist spotify.FullPlaylist) []types.TrackInfo {
 	results := []types.TrackInfo{}
+
 	for _, entry := range playlist.Tracks.Tracks {
 		artists := []string{}
+
 		for i := range entry.Track.Artists {
 			artists = append(artists, entry.Track.Artists[i].Name)
 		}
+
 		info := types.TrackInfo{
-			Name:    entry.Track.Name,
+			Title:   entry.Track.Name,
 			Artists: artists,
 		}
+
 		results = append(results, info)
 	}
 	return results

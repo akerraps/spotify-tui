@@ -1,6 +1,11 @@
 package types
 
 type TrackInfo struct {
-	Name    string
+	Title   string
 	Artists []string
+
+	Album       string
+	AlbumArtist string
+
+	Genre string
 }

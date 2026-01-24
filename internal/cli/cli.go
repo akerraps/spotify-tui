@@ -139,7 +139,7 @@ func RunCli() {
 							}
 
 							tracks = append(tracks, types.TrackInfo{
-								Name:    name,
+								Title:   name,
 								Artists: artists,
 							})
 						}

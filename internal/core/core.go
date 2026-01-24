@@ -42,7 +42,7 @@ func (s *Service) RunSongs(ctx context.Context, playlistName string, download bo
 			} else {
 				for _, song := range myTrackInfo {
 
-					name := song.Name
+					name := song.Title
 					artist := strings.Join(song.Artists, " ")
 
 					fmt.Printf("Song name: %s, Artists: %s\n", name, artist)
