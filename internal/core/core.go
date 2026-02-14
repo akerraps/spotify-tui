@@ -40,15 +40,19 @@ func (s *Service) RunSongs(ctx context.Context, playlistName string, download bo
 			if download {
 				fetcher.FetchAudio(myTrackInfo, out)
 			} else {
+				fmt.Printf("         Name        |         Artist       |              Album             |    Album Artist     \n")
 				for _, song := range myTrackInfo {
-
 					name := song.Title
-					artist := strings.Join(song.Artists, " ")
+					artist := strings.Join(song.Artists, ", ")
 					album := song.Album
-					albumArtist := strings.Join(song.AlbumArtist, " ")
+					albumArtist := strings.Join(song.AlbumArtist, ", ")
 
-					fmt.Printf("Song name: %s, Artists: %s, Album: %s, Artis Album: %s\n", name, artist, album, albumArtist)
+					fmt.Printf(
+						"%-20s | %-20s | %-30s | %-20s\n",
+						name, artist, album, albumArtist,
+					)
 				}
+
 			}
 		}
 	}
