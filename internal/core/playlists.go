@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"strings"
 
 	"akerraps/tunectl/internal/types"
 
@@ -43,7 +42,7 @@ func tracks(playlist spotify.FullPlaylist) []types.TrackInfo {
 			Title:       entry.Track.Name,
 			Artists:     artists,
 			Album:       entry.Track.Album.Name,
-			AlbumArtist: strings.Join(albumArtists, "; "),
+			AlbumArtist: albumArtists,
 		}
 
 		results = append(results, info)

@@ -5,7 +5,7 @@ type TrackInfo struct {
 	Artists []string
 
 	Album       string
-	AlbumArtist string
+	AlbumArtist []string
 
 	Genre string
 }

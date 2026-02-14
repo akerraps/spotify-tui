@@ -45,7 +45,7 @@ func (s *Service) RunSongs(ctx context.Context, playlistName string, download bo
 					name := song.Title
 					artist := strings.Join(song.Artists, " ")
 					album := song.Album
-					albumArtist := song.AlbumArtist
+					albumArtist := strings.Join(song.AlbumArtist, " ")
 
 					fmt.Printf("Song name: %s, Artists: %s, Album: %s, Artis Album: %s\n", name, artist, album, albumArtist)
 				}
