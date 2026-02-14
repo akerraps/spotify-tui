@@ -196,7 +196,7 @@ There is still a lot to do. At minimum:
 - [ ] Allow choosing audio download format
 - [x] Check if a song already exists before downloading
 - [ ] Improve Spotify permissions (currently limited scopes)
-- [ ] Add metadata to downloaded files (artist, album, genres, etc.)
+- [ ] Add metadata to downloaded files (artist, album, etc.)
 - [ ] Organize downloads into folders (artist / album / playlist)
 - [ ] Improve error handling and overall CLI syntax
 

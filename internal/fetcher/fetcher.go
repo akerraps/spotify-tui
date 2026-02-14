@@ -8,6 +8,8 @@ import (
 
 	"akerraps/tunectl/internal/cache"
 	"akerraps/tunectl/internal/types"
+
+	"go.senan.xyz/taglib"
 )
 
 func songExists(prefix string) (bool, error) {
@@ -16,6 +18,22 @@ func songExists(prefix string) (bool, error) {
 		return false, err
 	}
 	return len(matches) > 0, nil
+}
+
+func writeMetadata(file string, song types.TrackInfo) error {
+	artist := strings.Join(song.Artists, ", ")
+	album := song.Album
+	albumArtist := strings.Join(song.AlbumArtist, ", ")
+
+	err := taglib.WriteTags(file, map[string][]string{
+		taglib.AlbumArtist: {artist},
+		taglib.Album:       {album},
+		taglib.Artist:      {albumArtist},
+	}, 0)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func FetchAudio(tracks []types.TrackInfo, out string) error {
@@ -58,6 +76,13 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			continue
 		} else {
 			log.Printf("fetched %s - %s", name, artist)
+		}
+
+		err = writeMetadata(output, song)
+
+		if err != nil {
+			log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
+			continue
 		}
 	}
 
