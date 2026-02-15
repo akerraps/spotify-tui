@@ -62,7 +62,6 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 		cmd := exec.Command(bin,
 			"-x",
 			"--restrict-filenames",
-			"--windows-filenames",
 			"--quiet",
 			"--no-warnings",
 			"-t", "mp3",
@@ -78,7 +77,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			log.Printf("fetched %s - %s", name, artist)
 		}
 
-		err = writeMetadata(output, song)
+		err = writeMetadata(output+".mp3", song)
 
 		if err != nil {
 			log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
