@@ -55,6 +55,13 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 		if exists {
 			log.Printf("already exists: %s - %s", name, artist)
+
+			err = writeMetadata(output+".mp3", song)
+
+			if err != nil {
+				log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
+				continue
+			}
 			continue
 		}
 
