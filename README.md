@@ -195,10 +195,10 @@ There is still a lot to do. At minimum:
 - [ ] Implement the TUI
 - [ ] Allow choosing audio download format
 - [x] Check if a song already exists before downloading
-- [ ] Improve Spotify permissions (currently limited scopes)
-- [ ] Add metadata to downloaded files (artist, album, etc.)
-- [ ] Organize downloads into folders (artist / album / playlist)
-- [ ] Improve error handling and overall CLI syntax
+- [x] Improve Spotify permissions (currently limited scopes)
+- [x] Add metadata to downloaded files (artist, album, etc.)
+- [x] Organize downloads into folders (artist / album / playlist)
+- [x] Improve error handling and overall CLI syntax
 
 ## Disclaimer
 
