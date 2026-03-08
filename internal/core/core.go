@@ -14,20 +14,27 @@ type Service struct {
 
 func (s *Service) RunPlaylists(ctx context.Context) error {
 	client := Auth(ctx)
-	myPlaylists := listPlaylists(ctx, client)
 
-	for _, p := range myPlaylists.Playlists {
+	myPlaylists, err := listPlaylists(ctx, client)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range myPlaylists {
 		fmt.Printf("Playlist found: %s\n", p.Name)
 	}
+
 	return nil
 }
 
 func (s *Service) RunSongs(ctx context.Context, playlistName string, download bool, out string) error {
 	client := Auth(ctx)
-	myPlaylists := listPlaylists(ctx, client)
-
+	myPlaylists, err := listPlaylists(ctx, client)
+	if err != nil {
+		return err
+	}
 	found := false
-	for _, p := range myPlaylists.Playlists {
+	for _, p := range myPlaylists {
 		if playlistName == p.Name {
 			found = true
 			playlistID := p.ID
@@ -35,7 +42,11 @@ func (s *Service) RunSongs(ctx context.Context, playlistName string, download bo
 			if err != nil {
 				return err
 			}
-			myTrackInfo := tracks(myPlaylistData)
+
+			myTrackInfo, err := tracks(ctx, client, myPlaylistData)
+			if err != nil {
+				return err
+			}
 
 			if download {
 				fetcher.FetchAudio(myTrackInfo, out)
