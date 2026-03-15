@@ -1,30 +1,30 @@
 package cli
 
 import (
+	"akerraps/tunectl/internal/cache"
+	"akerraps/tunectl/internal/fetcher"
+	"akerraps/tunectl/internal/types"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
-	"akerraps/tunectl/internal/cache"
-	"akerraps/tunectl/internal/core"
-	"akerraps/tunectl/internal/fetcher"
-	"akerraps/tunectl/internal/types"
-
 	urfave "github.com/urfave/cli/v2"
 )
 
-func NewApp(ctx context.Context) *core.Service {
-	return &core.Service{
+type Service struct {
+	Name string
+}
+
+func NewApp(ctx context.Context) *Service {
+	return &Service{
 		Name: "TuneCtl",
 	}
 }
 
 func RunCli() {
 	ctx := context.Background()
-
-	appCore := NewApp(ctx)
 
 	cliApp := &urfave.App{
 		Name:  "tunectl",
@@ -49,56 +49,10 @@ func RunCli() {
 				},
 			},
 			{
-				Name:  "playlists",
-				Usage: "Manage playlists",
-				Flags: []urfave.Flag{
-					&urfave.BoolFlag{
-						Name:    "list",
-						Aliases: []string{"l"},
-						Usage:   "List all playlists",
-					},
-					&urfave.BoolFlag{
-						Name:    "download",
-						Aliases: []string{"d"},
-						Usage:   "Download songs from a playlist",
-					},
-					&urfave.StringFlag{
-						Name:    "output",
-						Aliases: []string{"o"},
-						Usage:   "Directory where songs will be downloaded",
-					},
-				},
-				Action: func(c *urfave.Context) error {
-					if c.Bool("list") {
-						return appCore.RunPlaylists(c.Context)
-					}
-
-					if c.Bool("download") {
-						if c.NArg() < 1 {
-							return fmt.Errorf("you must specify a playlist")
-						}
-						playlist := c.Args().Get(0)
-
-						out := c.String("output")
-						if out == "" {
-							return fmt.Errorf("the output directory must be specified")
-						}
-						return appCore.RunSongs(c.Context, playlist, true, out)
-					}
-
-					return fmt.Errorf("no valid flag provided")
-				},
-			},
-			{
 				Name:      "songs",
 				Usage:     "Manage songs",
-				ArgsUsage: "<playlist>",
+				ArgsUsage: "<song>",
 				Flags: []urfave.Flag{
-					&urfave.BoolFlag{
-						Name:    "list",
-						Aliases: []string{"l"},
-						Usage:   "List songs in a playlist",
-					},
 					&urfave.BoolFlag{
 						Name:    "download",
 						Aliases: []string{"d"},
@@ -112,46 +66,39 @@ func RunCli() {
 				},
 				Action: func(c *urfave.Context) error {
 					if c.NArg() < 1 {
-						return fmt.Errorf("you must specify a playlist")
+						return fmt.Errorf("you must specify correct command options")
 					}
 
 					out := c.String("output")
 
-					if c.Bool("download") {
-						if out == "" {
-							return fmt.Errorf("the output directory must be specified")
-						}
-
-						if c.NArg() == 0 {
-							return fmt.Errorf("you must specify at least one song")
-						}
-
-						args := c.Args().Slice()
-
-						tracks := make([]types.TrackInfo, 0, len(args))
-						for _, song := range args {
-
-							name, artistName, found := strings.Cut(song, ";")
-
-							artists := []string{}
-							if found {
-								artists = append(artists, artistName)
-							}
-
-							tracks = append(tracks, types.TrackInfo{
-								Title:   name,
-								Artists: artists,
-							})
-						}
-
-						return fetcher.FetchAudio(tracks, out)
-
-					} else if c.Bool("list") {
-						playlist := c.Args().Get(0)
-						return appCore.RunSongs(c.Context, playlist, false, out)
+					if out == "" {
+						return fmt.Errorf("the output directory must be specified")
 					}
 
-					return fmt.Errorf("no valid flag provided")
+					if c.NArg() == 0 {
+						return fmt.Errorf("you must specify at least one song")
+					}
+
+					args := c.Args().Slice()
+
+					tracks := make([]types.TrackInfo, 0, len(args))
+					for _, song := range args {
+
+						name, artistName, found := strings.Cut(song, ";")
+
+						artists := []string{}
+						if found {
+							artists = append(artists, artistName)
+						}
+
+						tracks = append(tracks, types.TrackInfo{
+							Title:   name,
+							Artists: artists,
+						})
+					}
+
+					return fetcher.FetchAudio(tracks, out)
+
 				},
 			},
 		},
