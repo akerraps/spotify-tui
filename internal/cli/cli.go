@@ -53,21 +53,15 @@ func RunCli() {
 				Usage:     "Manage songs",
 				ArgsUsage: "<song>",
 				Flags: []urfave.Flag{
-					&urfave.BoolFlag{
-						Name:    "download",
-						Aliases: []string{"d"},
-						Usage:   "Download a song by name",
-					},
+
 					&urfave.StringFlag{
 						Name:    "output",
 						Aliases: []string{"o"},
 						Usage:   "Directory where songs will be downloaded",
 					},
 				},
+
 				Action: func(c *urfave.Context) error {
-					if c.NArg() < 1 {
-						return fmt.Errorf("you must specify correct command options")
-					}
 
 					out := c.String("output")
 
