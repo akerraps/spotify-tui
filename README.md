@@ -1,85 +1,97 @@
 # tunectl – Terminal Spotify Playlist Manager (Learning Project)
 
-TuneCtl is a personal learning project written in Go.
+TuneCtl is a personal learning project written in Go.  
 The goal is to explore different ways of interacting with the Spotify Web API from the terminal, using both a classic CLI and (eventually) a full TUI.
 
 This is not a production-ready tool. It’s an experimental sandbox where I learn Go, project structure, APIs, and terminal UX. The code may be messy, incomplete, or broken in places — that’s intentional and part of the process.
+
+---
 
 ## Project Goal
 
 The main purpose of this project is learning and experimentation. In particular, I want to:
 
 - [x] Authenticate with the Spotify Web API
-- [x] Fetch user playlists
-- [x] Fetch tracks from a specific playlist
-- [x] Be able to download songs locally
+- [x] Fetch user playlists (with pagination support)
+- [x] Fetch all tracks from large playlists
+- [x] Download songs locally (yt-dlp)
+- [x] Export playlist data to CSV / JSON
 - [ ] Add a terminal UI (TUI) using Bubble Tea
 - [ ] Improve error handling and UX
 - [ ] Experiment with clean project architecture in Go
 
->Note: All interactions are done through official Spotify Web API endpoints and within Spotify’s terms of service. This project is for personal use and learning only.
->
+> Note: All interactions are done through official Spotify Web API endpoints and within Spotify’s terms of service. This project is for personal use and learning only.
+
+---
+
 ## Music Downloading (yt-dlp Integration)
 
-Song downloading is implemented using yt-dlp as a backend:
+Song downloading is implemented using **yt-dlp**:
 
-- Repository: <https://github.com/yt-dlp/yt-dlp>
+- Repository: https://github.com/yt-dlp/yt-dlp
 
 TuneCtl acts as a thin wrapper around `yt-dlp` to fetch audio from YouTube based on track metadata.
 
 ### Why yt-dlp?
 
-Using yt-dlp provides several advantages:
+- Actively maintained
+- Adapts quickly to YouTube changes
+- Avoids reinventing a complex downloader
+- Keeps TuneCtl focused on orchestration and learning
 
-- It is actively maintained and adapts quickly to YouTube changes
-- It significantly increases the long-term durability of the project
-- It avoids reinventing a complex and constantly changing downloader
-- It keeps TuneCtl focused on orchestration and learning, not scraping
+---
 
->This project is for personal use and learning only. All Spotify interactions are done through the official Spotify Web API and within Spotify’s terms of service.
+## Project Structure
 
-## Project Structure (High-Level)
 
 ```
 .
 ├── cmd
-│   └── tunctl
-│       └── main.go          # Application entrypoint
+│ └── tunctl
+│ └── main.go # Entry point
 ├── internal
-│   ├── cli                  # CLI layer (urfave/cli)
-│   │   └── cli.go
-│   ├── core                 # Central logic (Spotify auth, playlists, tracks)
-│   │   ├── authenticate.go
-│   │   ├── core.go
-│   │   └── playlists.go
-│   ├── fetcher              # yt-dlp wrapper for audio downloads
-│   │   └── fetcher.go
-│   ├── tui                  # TUI (planned, currently empty)
-│   │   └── tui.go
-│   └── types                # Shared structs and types
-│       └── types.go
+│ ├── cache # Cache management (yt-dlp, future API cache)
+│ │ └── cache.go
+│ ├── cli # CLI layer (urfave/cli)
+│ │ └── cli.go
+│ ├── core # Core logic
+│ │ ├── authenticate.go
+│ │ ├── core.go
+│ │ ├── export.go # CSV / JSON export
+│ │ └── playlists.go # Spotify API logic
+│ ├── fetcher # yt-dlp wrapper
+│ │ └── fetcher.go
+│ ├── tui # Future TUI (Bubble Tea)
+│ │ └── tui.go
+│ └── types # Shared types
+│ └── types.go
 ├── go.mod
 ├── go.sum
 └── README.md
 ```
 
-### Architecture Philosophy
+---
 
-- core: does the real work (Spotify API, logic)
-- cli: wires commands, flags, and arguments to the core
-- fetcher: wraps yt-dlp for downloading audio
-- types: shared data structures used across the project
-- tui: reserved for future Bubble Tea implementation
+## Architecture Philosophy
 
-This separation is intentional so the same core logic can be reused by both CLI and TUI.
+- **core** → business logic (Spotify, data processing)
+- **cli** → commands, flags, argument parsing
+- **fetcher** → audio downloading (yt-dlp)
+- **types** → shared structs
+- **cache** → cache handling (extensible)
+- **tui** → future UI layer
+
+This separation allows reuse of core logic across CLI and TUI.
+
+---
 
 ## Getting Started
 
-To use tunectl, you need to have a Spotify Developer account and create an application to obtain your credentials.
+1. Go to Spotify Developer Dashboard: https://developer.spotify.com/
+2. Create an app
+3. Get your credentials
 
-1. Go to Spotify [Developer Dashboard](https://developer.spotify.com/) and create a new application.
-2. Copy your Client ID and Client Secret.
-3. Create a .env file in the project root with the following variables:
+Create a `.env` file:
 
 ```
 SPOTIFY_ID=your_client_id_here
@@ -98,24 +110,6 @@ SPOTIFY_SECRET=your_client_secret_here
 go run cmd/tunctl/main.go -h
 ```
 
-Output:
-
-```
-NAME:
-   tunectl - Manage your playlists and songs
-
-USAGE:
-   tunectl [global options] command [command options]
-
-COMMANDS:
-   cache      Manage cache
-   playlists  Manage playlists
-   songs      Manage songs
-   help, h    Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --help, -h  show help
-```
 
 ### `playlists` command
 
@@ -158,6 +152,18 @@ go run cmd/tunctl/main.go songs --list "<playlist name>"
 ```
 
 Displays all tracks in the given playlist.
+
+### Export playlist to file
+
+```bash
+# CSV
+go run cmd/tunctl/main.go songs -l "<playlist>" -o songs.csv
+
+# JSON
+go run cmd/tunctl/main.go songs -l "<playlist>" -o songs.json
+```
+- Format is auto-detected by extension
+- Supports large playlists (pagination handled internally)
 
 **Download specific songs by name and artist**
 

@@ -29,15 +29,17 @@ func (s *Service) RunPlaylists(ctx context.Context) error {
 
 func (s *Service) RunSongs(ctx context.Context, playlistName string, download bool, out string) error {
 	client := Auth(ctx)
+
 	myPlaylists, err := listPlaylists(ctx, client)
 	if err != nil {
 		return err
 	}
-	found := false
+
 	for _, p := range myPlaylists {
 		if playlistName == p.Name {
-			found = true
+
 			playlistID := p.ID
+
 			myPlaylistData, err := playlistData(ctx, client, playlistID)
 			if err != nil {
 				return err
@@ -50,25 +52,41 @@ func (s *Service) RunSongs(ctx context.Context, playlistName string, download bo
 
 			if download {
 				fetcher.FetchAudio(myTrackInfo, out)
-			} else {
-				fmt.Printf("         Name        |         Artist       |              Album             |    Album Artist     \n")
-				for _, song := range myTrackInfo {
-					name := song.Title
-					artist := strings.Join(song.Artists, ", ")
-					album := song.Album
-					albumArtist := strings.Join(song.AlbumArtist, ", ")
+				return nil
+			}
 
-					fmt.Printf(
-						"%-20s | %-20s | %-30s | %-20s\n",
-						name, artist, album, albumArtist,
-					)
+			if out != "" {
+				if strings.HasSuffix(out, ".json") {
+					err = ExportTracksToJSON(myTrackInfo, out)
+				} else {
+					err = ExportTracksToCSV(myTrackInfo, out)
 				}
 
+				if err != nil {
+					return err
+				}
+
+				fmt.Println("Exported to", out)
+				return nil
 			}
+
+			fmt.Printf("         Name        |         Artist       |              Album             |    Album Artist     \n")
+
+			for _, song := range myTrackInfo {
+				name := song.Title
+				artist := strings.Join(song.Artists, ", ")
+				album := song.Album
+				albumArtist := strings.Join(song.AlbumArtist, ", ")
+
+				fmt.Printf(
+					"%-20s | %-20s | %-30s | %-20s\n",
+					name, artist, album, albumArtist,
+				)
+			}
+
+			return nil
 		}
 	}
-	if !found {
-		return fmt.Errorf("playlist %q not found", playlistName)
-	}
-	return nil
+
+	return fmt.Errorf("playlist %q not found", playlistName)
 }
