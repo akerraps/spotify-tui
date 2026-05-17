@@ -2,6 +2,7 @@ package fetcher
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/michiwend/gomusicbrainz"
 )
@@ -18,7 +19,7 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 
 func GetSongInfo(song string, artist string) (string, string, error) {
 	client := createClient()
-	query := fmt.Sprintf(`recording:"%s" AND artist:%s AND primarytype:album`, song, artist)
+	query := fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
 
 	resp, err := client.SearchRecording(query, 1, 0)
 	if err != nil {
@@ -26,7 +27,7 @@ func GetSongInfo(song string, artist string) (string, string, error) {
 	}
 
 	if len(resp.Recordings) == 0 {
-		fmt.Printf("no information found por song \"%s\" and artist \"%s\"\n", song, artist)
+		log.Printf("no information found por song \"%s\" and artist \"%s\"\n", song, artist)
 	} else {
 
 		song = resp.Recordings[0].Title
