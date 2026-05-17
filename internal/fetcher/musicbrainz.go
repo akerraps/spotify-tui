@@ -16,15 +16,23 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 	return client
 }
 
-func GetArtistById() {
-
+func GetSongInfo(song string, artist string) (string, string, error) {
 	client := createClient()
-	artist, err := client.LookupArtist("")
+	query := fmt.Sprintf(`recording:"%s" AND artist:%s AND primarytype:album`, song, artist)
 
+	resp, err := client.SearchRecording(query, 1, 0)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return song, artist, fmt.Errorf("cannot fetch \"%s - %s\" song data: %w", song, artist, err)
 	}
 
-	fmt.Printf("%+v", artist)
+	if len(resp.Recordings) == 0 {
+		fmt.Printf("no information found por song \"%s\" and artist \"%s\"\n", song, artist)
+	} else {
+
+		song = resp.Recordings[0].Title
+		artist = resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.Name
+
+	}
+
+	return song, artist, err
 }
