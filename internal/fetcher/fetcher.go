@@ -20,15 +20,16 @@ func songExists(prefix string) (bool, error) {
 	return len(matches) > 0, nil
 }
 
-func writeMetadata(file string, song types.TrackInfo) error {
+func writeMetadata(file string, song types.TrackInfo, genre []string) error {
 	artist := strings.Join(song.Artists, ", ")
 	album := song.Album
 	albumArtist := strings.Join(song.AlbumArtist, ", ")
 
 	err := taglib.WriteTags(file, map[string][]string{
-		taglib.AlbumArtist: {artist},
+		taglib.AlbumArtist: {albumArtist},
 		taglib.Album:       {album},
-		taglib.Artist:      {albumArtist},
+		taglib.Artist:      {artist},
+		taglib.Genre:       genre,
 	}, 0)
 	if err != nil {
 		return err
@@ -53,12 +54,12 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			return err
 		}
 
-		name, artist, err = GetSongInfo(name, artist)
+		name, artist, genres, err := GetSongInfo(name, artist)
 
 		if exists {
 			log.Printf("already exists: %s - %s", name, artist)
 
-			err = writeMetadata(output+".mp3", song)
+			err = writeMetadata(output+".mp3", song, genres)
 			if err != nil {
 				log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
 				continue
@@ -85,7 +86,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			log.Printf("fetched %s - %s", name, artist)
 		}
 
-		err = writeMetadata(output+".mp3", song)
+		err = writeMetadata(output+".mp3", song, genres)
 		if err != nil {
 			log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
 			continue

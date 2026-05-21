@@ -3,14 +3,12 @@ package fetcher
 import (
 	"fmt"
 	"log"
+	"strings"
+
+	"akerraps/tunectl/internal/types"
 
 	"github.com/michiwend/gomusicbrainz"
 )
-
-type Tag struct {
-	Count int
-	Name  string
-}
 
 func createClient() (client *gomusicbrainz.WS2Client) {
 	client, _ = gomusicbrainz.NewWS2Client(
@@ -22,14 +20,13 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 	return client
 }
 
-func GetSongInfo(song string, artist string) (songName string, artistName string, err error) {
+func GetSongInfo(song string, artist string) (songName string, artistName string, genres []string, err error) {
 	client := createClient()
 	query := fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
-	artistId := ""
 
 	resp, err := client.SearchRecording(query, 1, 0)
 	if err != nil {
-		return song, artist, fmt.Errorf("cannot fetch \"%s - %s\" song data: %w", song, artist, err)
+		return song, artist, nil, fmt.Errorf("cannot fetch \"%s - %s\" song data: %w", song, artist, err)
 	}
 
 	if len(resp.Recordings) == 0 {
@@ -38,11 +35,14 @@ func GetSongInfo(song string, artist string) (songName string, artistName string
 
 		song = resp.Recordings[0].Title
 		artist = resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.Name
-		artistId = string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
-		fmt.Println(getArtistInfo(artistId))
+		artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
+		genres, err = getArtistInfo(artistId)
+		if err != nil {
+			return song, artist, nil, err
+		}
 	}
 
-	return song, artist, err
+	return song, artist, genres, err
 }
 
 func getArtistInfo(artistID string) ([]string, error) {
@@ -57,7 +57,22 @@ func getArtistInfo(artistID string) ([]string, error) {
 
 	names := make([]string, 0, len(tags))
 	for _, tag := range tags {
-		names = append(names, tag.Name)
+
+		found := false
+
+		for _, genre := range types.GenreFamilies {
+			if strings.Contains(
+				strings.ToLower(tag.Name),
+				strings.ToLower(genre),
+			) {
+				found = true
+				break
+			}
+		}
+
+		if found {
+			names = append(names, tag.Name)
+		}
 	}
 
 	return names, nil
