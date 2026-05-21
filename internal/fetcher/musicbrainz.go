@@ -8,6 +8,8 @@ import (
 	"akerraps/tunectl/internal/types"
 
 	"github.com/michiwend/gomusicbrainz"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func createClient() (client *gomusicbrainz.WS2Client) {
@@ -71,7 +73,7 @@ func getArtistInfo(artistID string) ([]string, error) {
 		}
 
 		if found {
-			names = append(names, tag.Name)
+			names = append(names, cases.Title(language.English).String(tag.Name))
 		}
 	}
 
