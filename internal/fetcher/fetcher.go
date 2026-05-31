@@ -20,16 +20,17 @@ func songExists(prefix string) (bool, error) {
 	return len(matches) > 0, nil
 }
 
-func writeMetadata(file string, song types.TrackInfo, genre []string) error {
+func writeMetadata(file string, song types.TrackInfo) error {
 	artist := strings.Join(song.Artists, ", ")
 	album := song.Album
 	albumArtist := strings.Join(song.AlbumArtist, ", ")
+	genres := strings.Join(song.Genres, ", ")
 
 	err := taglib.WriteTags(file, map[string][]string{
 		taglib.AlbumArtist: {albumArtist},
 		taglib.Album:       {album},
 		taglib.Artist:      {artist},
-		taglib.Genre:       genre,
+		taglib.Genre:       {genres},
 	}, 0)
 	if err != nil {
 		return err
@@ -47,6 +48,13 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 		name := song.Title
 		artist := strings.Join(song.Artists, " ")
+
+		name, artist, genres, err := GetSongInfo(name, artist)
+
+		song.Title = name
+		song.Artists = []string{artist}
+		song.Genres = genres
+
 		output := filepath.Join(out, name)
 
 		exists, err := songExists(output)
@@ -54,12 +62,10 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			return err
 		}
 
-		name, artist, genres, err := GetSongInfo(name, artist)
-
 		if exists {
 			log.Printf("already exists: %s - %s", name, artist)
 
-			err = writeMetadata(output+".mp3", song, genres)
+			err = writeMetadata(output+".mp3", song)
 			if err != nil {
 				log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
 				continue
@@ -74,7 +80,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			"--quiet",
 			"--no-warnings",
 			"-t", "mp3",
-			"ytsearch:"+name+" "+artist,
+			"ytsearch:"+name+" "+artist+" song",
 			"-o", output)
 
 		_, err = cmd.Output()
@@ -86,7 +92,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			log.Printf("fetched %s - %s", name, artist)
 		}
 
-		err = writeMetadata(output+".mp3", song, genres)
+		err = writeMetadata(output+".mp3", song)
 		if err != nil {
 			log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
 			continue

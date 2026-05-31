@@ -38,6 +38,7 @@ func GetSongInfo(song string, artist string) (songName string, artistName string
 		song = resp.Recordings[0].Title
 		artist = resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.Name
 		artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
+
 		genres, err = getArtistInfo(artistId)
 		if err != nil {
 			return song, artist, nil, err
