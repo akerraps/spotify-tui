@@ -21,16 +21,12 @@ func songExists(prefix string) (bool, error) {
 }
 
 func writeMetadata(file string, song types.TrackInfo) error {
-	artist := strings.Join(song.Artists, ", ")
-	album := song.Album
-	albumArtist := strings.Join(song.AlbumArtist, ", ")
-	genres := strings.Join(song.Genres, ", ")
 
 	err := taglib.WriteTags(file, map[string][]string{
-		taglib.AlbumArtist: {albumArtist},
-		taglib.Album:       {album},
-		taglib.Artist:      {artist},
-		taglib.Genre:       {genres},
+		taglib.AlbumArtist: song.AlbumArtist,
+		taglib.Album:       {song.Album},
+		taglib.Artist:      song.Artists,
+		taglib.Genre:       song.Genres,
 	}, 0)
 	if err != nil {
 		return err

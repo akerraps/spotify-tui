@@ -24,7 +24,12 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 
 func GetSongInfo(song string, artist string) (songName string, artistName string, genres []string, err error) {
 	client := createClient()
-	query := fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
+	var query string
+	if artist == "" {
+		query = fmt.Sprintf(`recording:"%s"`, song)
+	} else {
+		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
+	}
 
 	resp, err := client.SearchRecording(query, 1, 0)
 	if err != nil {
