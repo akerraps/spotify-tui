@@ -42,16 +42,15 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 	for _, song := range tracks {
 
-		name := song.Title
 		artist := strings.Join(song.Artists, " ")
 
-		info, err := GetSongInfo(name, artist)
+		info, err := GetSongInfo(song.Title, song.Artists)
 
 		song.Title = info.Title
 		song.Artists = info.Artists
 		song.Genres = info.Genres
 
-		output := filepath.Join(out, name)
+		output := filepath.Join(out, song.Title)
 
 		exists, err := songExists(output)
 		if err != nil {
@@ -59,38 +58,38 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 		}
 
 		if exists {
-			log.Printf("already exists: %s - %s", song.Title, song.Artists[0])
+			log.Printf("already exists: %s - %s", song.Title, strings.Join(song.Artists, ", "))
 
 			err = writeMetadata(output+".mp3", song)
 			if err != nil {
-				log.Printf("coudnt write metadata to %s - %s: %v", song.Title, song.Artists[0], err)
+				log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
 				continue
 			}
 			continue
 		}
 
-		log.Printf("fetching %s - %s", song.Title, song.Artists[0])
+		log.Printf("fetching %s - %s", song.Title, strings.Join(song.Artists, ", "))
 		cmd := exec.Command(bin,
 			"-x",
 			"--restrict-filenames",
 			"--quiet",
 			"--no-warnings",
 			"-t", "mp3",
-			"ytsearch:"+name+" "+artist+" song",
+			"ytsearch:"+song.Title+" "+artist+" song",
 			"-o", output)
 
 		_, err = cmd.Output()
 
 		if err != nil {
-			log.Printf("failed to fetch %s - %s: %v", name, artist, err)
+			log.Printf("failed to fetch %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
 			continue
 		} else {
-			log.Printf("fetched %s - %s", song.Title, song.Artists[0])
+			log.Printf("fetched %s - %s", song.Title, strings.Join(song.Artists, ", "))
 		}
 
 		err = writeMetadata(output+".mp3", song)
 		if err != nil {
-			log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
+			log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
 			continue
 		}
 	}
