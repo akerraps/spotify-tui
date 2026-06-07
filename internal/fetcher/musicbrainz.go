@@ -22,9 +22,15 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 	return client
 }
 
-func GetSongInfo(song string, artist string) (songName string, artistName string, genres []string, err error) {
-	client := createClient()
+func GetSongInfo(song string, artist string) (info types.TrackInfo, err error) {
 	var query string
+	client := createClient()
+
+	info = types.TrackInfo{
+		Title:   song,
+		Artists: []string{artist},
+	}
+
 	if artist == "" {
 		query = fmt.Sprintf(`recording:"%s"`, song)
 	} else {
@@ -33,24 +39,24 @@ func GetSongInfo(song string, artist string) (songName string, artistName string
 
 	resp, err := client.SearchRecording(query, 1, 0)
 	if err != nil {
-		return song, artist, nil, fmt.Errorf("cannot fetch \"%s - %s\" song data: %w", song, artist, err)
+		return info, fmt.Errorf("cannot fetch \"%s - %s\" song data: %w", song, artist, err)
 	}
 
 	if len(resp.Recordings) == 0 {
 		log.Printf("no information found for song \"%s\" and artist \"%s\"\n", song, artist)
 	} else {
 
-		song = resp.Recordings[0].Title
-		artist = resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.Name
+		info.Title = resp.Recordings[0].Title
+		info.Artists = []string{resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.Name}
 		artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
 
-		genres, err = getArtistInfo(artistId)
+		info.Genres, err = getArtistInfo(artistId)
 		if err != nil {
-			return song, artist, nil, err
+			return info, err
 		}
 	}
 
-	return song, artist, genres, err
+	return info, err
 }
 
 func getArtistInfo(artistID string) ([]string, error) {

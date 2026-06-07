@@ -45,11 +45,11 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 		name := song.Title
 		artist := strings.Join(song.Artists, " ")
 
-		name, artist, genres, err := GetSongInfo(name, artist)
+		info, err := GetSongInfo(name, artist)
 
-		song.Title = name
-		song.Artists = []string{artist}
-		song.Genres = genres
+		song.Title = info.Title
+		song.Artists = info.Artists
+		song.Genres = info.Genres
 
 		output := filepath.Join(out, name)
 
@@ -59,17 +59,17 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 		}
 
 		if exists {
-			log.Printf("already exists: %s - %s", name, artist)
+			log.Printf("already exists: %s - %s", song.Title, song.Artists[0])
 
 			err = writeMetadata(output+".mp3", song)
 			if err != nil {
-				log.Printf("coudnt write metadata to %s - %s: %v", name, artist, err)
+				log.Printf("coudnt write metadata to %s - %s: %v", song.Title, song.Artists[0], err)
 				continue
 			}
 			continue
 		}
 
-		log.Printf("fetching %s - %s", name, artist)
+		log.Printf("fetching %s - %s", song.Title, song.Artists[0])
 		cmd := exec.Command(bin,
 			"-x",
 			"--restrict-filenames",
@@ -85,7 +85,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			log.Printf("failed to fetch %s - %s: %v", name, artist, err)
 			continue
 		} else {
-			log.Printf("fetched %s - %s", name, artist)
+			log.Printf("fetched %s - %s", song.Title, song.Artists[0])
 		}
 
 		err = writeMetadata(output+".mp3", song)
