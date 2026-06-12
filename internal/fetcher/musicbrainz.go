@@ -46,8 +46,11 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 		log.Printf("no information found for song \"%s\" and artist \"%s\"\n", song, artist)
 	} else {
 
+		info.Artists = info.Artists[:0]
 		info.Title = resp.Recordings[0].Title
-		info.Artists = []string{resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.Name}
+		for _, credit := range resp.Recordings[0].ArtistCredit.NameCredits {
+			info.Artists = append(info.Artists, credit.Artist.Name)
+		}
 		artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
 
 		info.Genres, err = getArtistInfo(artistId)

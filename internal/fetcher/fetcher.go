@@ -42,8 +42,6 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 
 	for _, song := range tracks {
 
-		artist := strings.Join(song.Artists, " ")
-
 		info, err := GetSongInfo(song.Title, song.Artists)
 
 		song.Title = info.Title
@@ -75,7 +73,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			"--quiet",
 			"--no-warnings",
 			"-t", "mp3",
-			"ytsearch:"+song.Title+" "+artist+" song",
+			"ytsearch:"+song.Title+" "+strings.Join(song.Artists, " ")+" song",
 			"-o", output)
 
 		_, err = cmd.Output()
