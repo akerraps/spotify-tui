@@ -59,19 +59,30 @@ func RunCli() {
 						Aliases: []string{"o"},
 						Usage:   "Directory where songs will be downloaded",
 					},
+					&urfave.BoolFlag{
+						Name:  "no-api",
+						Usage: "Omit MusicBrainz api usage",
+					},
 				},
 
 				Action: func(c *urfave.Context) error {
 
-					out := c.String("output")
-
-					if out == "" {
-						return fmt.Errorf("the output directory must be specified")
-					}
-
 					if c.NArg() == 0 {
 						return fmt.Errorf("you must specify at least one song")
 					}
+
+					opts := types.DefaultOptions()
+
+					if out := c.String("output"); out != "" {
+						opts.OutputDir = out
+					} else {
+						log.Printf(
+							"warning: output directory not specified, using default: %s",
+							opts.OutputDir,
+						)
+					}
+
+					opts.NoAPI = c.Bool("no-api")
 
 					args := c.Args().Slice()
 
@@ -91,7 +102,7 @@ func RunCli() {
 						})
 					}
 
-					return fetcher.FetchAudio(tracks, out)
+					return fetcher.FetchAudio(tracks, opts)
 
 				},
 			},

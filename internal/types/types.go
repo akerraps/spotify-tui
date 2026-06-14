@@ -10,6 +10,18 @@ type TrackInfo struct {
 	Genres []string
 }
 
+type Options struct {
+	OutputDir string
+	NoAPI     bool
+}
+
+func DefaultOptions() Options {
+	return Options{
+		OutputDir: "/tmp/",
+		NoAPI:     false,
+	}
+}
+
 var GenreFamilies = []string{
 	// Rock family
 	"rock",

@@ -34,7 +34,7 @@ func writeMetadata(file string, song types.TrackInfo) error {
 	return nil
 }
 
-func FetchAudio(tracks []types.TrackInfo, out string) error {
+func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 	bin, err := cache.GetYtDlp()
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 		song.Artists = info.Artists
 		song.Genres = info.Genres
 
-		output := filepath.Join(out, song.Title)
+		output := filepath.Join(opts.OutputDir, song.Title)
 
 		exists, err := songExists(output)
 		if err != nil {
@@ -73,6 +73,7 @@ func FetchAudio(tracks []types.TrackInfo, out string) error {
 			"--quiet",
 			"--no-warnings",
 			"-t", "mp3",
+			"--audio-quality", "0",
 			"ytsearch:"+song.Title+" "+strings.Join(song.Artists, " ")+" song",
 			"-o", output)
 
