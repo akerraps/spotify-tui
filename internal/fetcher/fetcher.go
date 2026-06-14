@@ -42,11 +42,16 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 	for _, song := range tracks {
 
-		info, err := GetSongInfo(song.Title, song.Artists)
+		if opts.NoAPI == false {
+			info, err := GetSongInfo(song.Title, song.Artists)
+			if err != nil {
+				return err
+			}
 
-		song.Title = info.Title
-		song.Artists = info.Artists
-		song.Genres = info.Genres
+			song.Title = info.Title
+			song.Artists = info.Artists
+			song.Genres = info.Genres
+		}
 
 		output := filepath.Join(opts.OutputDir, song.Title)
 
