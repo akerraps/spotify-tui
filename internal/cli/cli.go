@@ -50,7 +50,7 @@ func RunCli() {
 			},
 			{
 				Name:      "songs",
-				Usage:     "Manage songs",
+				Usage:     "Download songs",
 				ArgsUsage: "<song>",
 				Flags: []urfave.Flag{
 

@@ -1,5 +1,10 @@
 package types
 
+import (
+	"fmt"
+	"os/user"
+)
+
 type TrackInfo struct {
 	Title   string
 	Artists []string
@@ -16,8 +21,12 @@ type Options struct {
 }
 
 func DefaultOptions() Options {
+	currentUser, _ := user.Current()
+
+	ouputDir := fmt.Sprintf("/home/%s/Music", currentUser.Username)
+
 	return Options{
-		OutputDir: "/tmp/",
+		OutputDir: ouputDir,
 		NoAPI:     false,
 	}
 }
