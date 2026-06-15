@@ -1,4 +1,4 @@
-# `tunectl` – Terminal Music Downloader & Metadata Tool
+# Tunectl – Terminal Music Downloader & Metadata Tool
 
 `tunectl` is a personal learning project written in Go.
 
@@ -8,37 +8,66 @@ It is not intended to be a production-ready application. The codebase is experim
 
 ## Overview
 
-`tunectl` allows downloading individual songs from the terminal, optionally using a metadata API to improve search accuracy.
+tunectl is a terminal tool for downloading individual songs using yt-dlp, with optional metadata enrichment via external APIs.
 
-The tool operates in two modes:
+It operates in two modes:
 
-### 1. API-enabled mode
+### API-enabled mode
 
-When API usage is enabled, `tunectl` attempts to enrich the user input using external music metadata sources.
+When enabled, the input is enriched using music metadata services (such as MusicBrainz). This can normalize artist names, fix typos, and complete missing fields like genre before building the final download query.
 
-This includes:
+The downside is that incorrect metadata resolution **may lead to downloading a different track than intended**, since the final match depends on external sources.
 
-- Normalizing artist names
-- Attempting to correct typos in track or artist names
-- Filling missing metadata such as genres
+### No-API mode
 
-After resolution, the final query is passed to the downloader.
+When disabled, no metadata enrichment is performed. The raw input is used directly to build a search query in the form "<song> <artist> song", which is then passed to yt-dlp to download the first matching result.
 
-Important limitation:
+## CLI Usage
 
-> If the metadata resolution produces an incorrect match, the tool may download a different track than the one intended by the user, since the final resolution is delegated to `yt-dlp`.
+The main command provided by tunectl is songs, which is used to download tracks directly from the terminal.
 
-### 2. No-API mode
+Basic usage:
 
-When API usage is disabled, `tunectl` bypasses all metadata enrichment.
-
-The input provided by the user is used directly to construct a search query in the form:
-
-```
-"<song> <artist> song"
+```bash
+tunectl songs "song;artist;genre"
 ```
 
-The resulting query is passed directly to `yt-dlp`, which downloads the first matching result found.
+Each input is a semicolon-separated string with the following structure:
+
+song: track name
+artist: artist or group name
+genre: optional genre tag used for filtering or enrichment
+
+Multiple songs can be provided in a single command:
+
+```bash
+songs tunectl "song1;artist1;genre1" "song2;artist2;genre2"
+```
+
+When multiple entries are passed, each one is processed independently.
+
+### Metadata behavior
+
+By default, tunectl runs in API-enabled mode.
+
+In this mode:
+
+- song and artist fields are enriched using external metadata sources
+- misspellings and incomplete inputs may be corrected
+- additional metadata may be resolved via MusicBrainz
+
+If the --no-api flag is used, metadata enrichment is disabled.
+
+In this case:
+
+- the input is used directly to build the search query
+- the query format becomes: "<song> <artist> song"
+- genre is not used for filtering but is still appended to the final search query when present
+
+Important note:
+
+> [!WARNING]
+> If API mode is enabled, all fields may be replaced by resolved metadata except genre, which is always preserved.
 
 ## Download behavior
 
@@ -80,60 +109,15 @@ This is intended as a recovery mechanism in cases where:
 
 On the next execution, `tunectl` will automatically re-download the latest available version of `yt-dlp` from the official repository.
 
-## Future work / Pending features
+## Future work
 
-The project is still in early development and several major features are planned but not yet implemented.
+The project is still in early development. The following features are planned:
 
-### Terminal UI (TUI)
-
-A terminal user interface is planned, which will be launched when running tunectl without any arguments.
-
-Although this is part of the long-term direction of the project, it is currently not the main focus. There are several core features that must be improved before the TUI becomes a priority.
-
-### File-based input
-
-Support will be added for reading track data from external files, including:
-
-- CSV files
-- JSON files
-
-This will allow batch processing of songs and better integration with external tools or playlists.
-
-### Cache improvements
-
-A more advanced caching system is planned, replacing the current lightweight cache approach.
-
-The goal is to introduce a local SQLite database that will store:
-
-- artist metadata
-- track metadata
-- previously resolved queries
-
-This will significantly reduce repeated API calls over time.
-
-The intended behavior is:
-
-- initial requests rely on external API lookups
-- results are stored locally in SQLite
-- subsequent requests prefer local data over API calls
-- API usage gradually decreases as the local database becomes more complete
-
-This component is considered a key part of the long-term architecture of the project.
-
-### Playlist and batch downloads
-
-Support will be added for downloading full playlists from YouTube via links.
-
-This will allow batch ingestion of multiple tracks in a single operation.
-
-### Album downloads
-
-The tool will also support downloading full albums by providing:
-
-- album name
-- artist name
-
-The system will attempt to resolve the album and download all associated tracks automatically.
+- [ ] Terminal UI (TUI): A terminal interface that becomes the default behavior when running tunectl without arguments.
+- [ ] File input support: CSV, JSON
+- [ ] Persistent cache (SQLite): The system will prefer local data over API calls when available, reducing external dependencies over time.
+- [ ] Playlist downloads: Support downloading full playlists from YouTube URLs.
+- [ ] Album downloads: Support resolving and downloading full albums using
 
 ## Notes
 

@@ -50,7 +50,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 			song.Title = info.Title
 			song.Artists = info.Artists
-			song.Genres = info.Genres
+			song.Genres = append(song.Genres, info.Genres...)
 		}
 
 		output := filepath.Join(opts.OutputDir, song.Title)

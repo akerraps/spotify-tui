@@ -87,19 +87,25 @@ func RunCli() {
 					args := c.Args().Slice()
 
 					tracks := make([]types.TrackInfo, 0, len(args))
+
 					for _, song := range args {
+						parts := strings.SplitN(song, ";", 3)
 
-						name, artistName, found := strings.Cut(song, ";")
+						track := types.TrackInfo{}
 
-						artists := []string{}
-						if found {
-							artists = append(artists, artistName)
+						if len(parts) > 0 {
+							track.Title = strings.TrimSpace(parts[0])
 						}
 
-						tracks = append(tracks, types.TrackInfo{
-							Title:   name,
-							Artists: artists,
-						})
+						if len(parts) > 1 {
+							track.Artists = []string{strings.TrimSpace(parts[1])}
+						}
+
+						if len(parts) > 2 {
+							track.Genres = []string{strings.TrimSpace(parts[2])}
+						}
+
+						tracks = append(tracks, track)
 					}
 
 					return fetcher.FetchAudio(tracks, opts)
