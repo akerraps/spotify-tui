@@ -112,6 +112,63 @@ func RunCli() {
 
 				},
 			},
+			{
+				Name:  "file",
+				Usage: "Download data from a file",
+				Flags: []urfave.Flag{
+					&urfave.BoolFlag{
+						Name:  "csv",
+						Usage: "Download from CSV",
+					},
+					&urfave.BoolFlag{
+						Name:  "json",
+						Usage: "Download from JSON",
+					},
+					&urfave.StringFlag{
+						Name:    "data",
+						Aliases: []string{"d"},
+						Usage:   "Data file path",
+					}, &urfave.StringFlag{
+						Name:    "output",
+						Aliases: []string{"o"},
+						Usage:   "Directory where songs will be downloaded",
+					},
+					&urfave.BoolFlag{
+						Name:  "no-api",
+						Usage: "Omit MusicBrainz api usage",
+					},
+				},
+				Action: func(c *urfave.Context) error {
+
+					opts := types.DefaultOptions()
+
+					if out := c.String("output"); out != "" {
+						opts.OutputDir = out
+					} else {
+						log.Printf(
+							"warning: output directory not specified, using default: %s",
+							opts.OutputDir,
+						)
+					}
+
+					opts.NoAPI = c.Bool("no-api")
+
+					csv := c.Bool("csv")
+					json := c.Bool("json")
+
+					if csv == json {
+						return fmt.Errorf("You must choose file type")
+					}
+
+					file := c.String("data")
+					tracks, err := fetcher.ReadCsvFile(file)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					return fetcher.FetchAudio(tracks, opts)
+				},
+			},
 		},
 	}
 
