@@ -109,6 +109,48 @@ This is intended as a recovery mechanism in cases where:
 
 On the next execution, `tunectl` will automatically re-download the latest available version of `yt-dlp` from the official repository.
 
+## File input usage (CSV / JSON)
+
+tunectl supports downloading songs from structured files using the `file` command.
+
+This mode allows batch processing of tracks defined in a CSV or JSON file.
+
+### CSV mode
+
+Use the `--csv` flag and provide a file path via `--data`:
+
+```bash
+tunectl file --csv --data songs.csv
+```
+
+Each CSV row must follow this format:
+
+```csv
+Title;Artist 1, Artist 2;Album
+```
+
+Additional columns are ignored
+
+### JSON mode
+
+Use the `--json` flag and provide a JSON file via `--data`:
+
+```bash
+tunectl file --json --data songs.json
+```
+
+The JSON file must contain an array of certain objects:
+
+```json
+[
+  {
+    "title": "Title",
+    "artists": ["Artist 1", "Artist 2"],
+    "album": "Album"
+  }
+]
+```
+
 ## Future work
 
 The project is still in early development. The following features are planned:

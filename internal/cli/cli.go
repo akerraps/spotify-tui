@@ -98,7 +98,11 @@ func RunCli() {
 						}
 
 						if len(parts) > 1 {
-							track.Artists = []string{strings.TrimSpace(parts[1])}
+							artists := []string{strings.TrimSpace(parts[1])}
+							for i := range artists {
+								artists[i] = strings.TrimSpace(artists[i])
+							}
+							track.Artists = artists
 						}
 
 						if len(parts) > 2 {

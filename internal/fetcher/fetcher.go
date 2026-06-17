@@ -1,6 +1,7 @@
 package fetcher
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"path/filepath"
@@ -72,15 +73,25 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		}
 
 		log.Printf("fetching %s - %s", song.Title, strings.Join(song.Artists, ", "))
+
+		artists := strings.Join(song.Artists, " ")
+		search := fmt.Sprintf(
+			`ytsearch:"%s" %s "song"`,
+			song.Title,
+			artists,
+		)
+
 		cmd := exec.Command(bin,
 			"-x",
 			"--restrict-filenames",
 			"--quiet",
 			"--no-warnings",
+			"--no-playlist",
 			"-t", "mp3",
 			"--audio-quality", "0",
-			"ytsearch:"+song.Title+" "+strings.Join(song.Artists, " ")+" song",
-			"-o", output)
+			search,
+			"-o", output,
+		)
 
 		_, err = cmd.Output()
 
