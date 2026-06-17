@@ -41,7 +41,7 @@ genre: optional genre tag used for filtering or enrichment
 Multiple songs can be provided in a single command:
 
 ```bash
-songs tunectl "song1;artist1;genre1" "song2;artist2;genre2"
+songs tunectl "Title;Artist 1;Genre" "Title;Artist 2;Genre"
 ```
 
 When multiple entries are passed, each one is processed independently.
@@ -126,7 +126,7 @@ tunectl file --csv --data songs.csv
 Each CSV row must follow this format:
 
 ```csv
-Title;Artist 1, Artist 2;Album
+Title;Artist 1, Artist 2";Album
 ```
 
 Additional columns are ignored
@@ -144,9 +144,9 @@ The JSON file must contain an array of certain objects:
 ```json
 [
   {
-    "title": "Title",
-    "artists": ["Artist 1", "Artist 2"],
-    "album": "Album"
+    "Title": "Title",
+    "Artists": ["Artist 1", "Artist 2"],
+    "Album": "Album"
   }
 ]
 ```
@@ -156,7 +156,6 @@ The JSON file must contain an array of certain objects:
 The project is still in early development. The following features are planned:
 
 - [ ] Terminal UI (TUI): A terminal interface that becomes the default behavior when running tunectl without arguments.
-- [ ] File input support: CSV, JSON
 - [ ] Persistent cache (SQLite): The system will prefer local data over API calls when available, reducing external dependencies over time.
 - [ ] Playlist downloads: Support downloading full playlists from YouTube URLs.
 - [ ] Album downloads: Support resolving and downloading full albums using
