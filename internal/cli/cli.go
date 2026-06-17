@@ -161,7 +161,16 @@ func RunCli() {
 					}
 
 					file := c.String("data")
-					tracks, err := fetcher.ReadCsvFile(file)
+
+					var tracks []types.TrackInfo
+					var err error
+
+					if csv == true {
+						tracks, err = fetcher.ReadCsvFile(file)
+					} else {
+						tracks, err = fetcher.ReadJsonFile(file)
+					}
+
 					if err != nil {
 						log.Fatal(err)
 					}

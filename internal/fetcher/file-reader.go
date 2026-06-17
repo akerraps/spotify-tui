@@ -3,6 +3,7 @@ package fetcher
 import (
 	"akerraps/tunectl/internal/types"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -42,6 +43,23 @@ func ReadCsvFile(filePath string) (tracks []types.TrackInfo, err error) {
 
 		song.Album = row[2]
 		tracks = append(tracks, song)
+	}
+
+	return tracks, nil
+}
+
+func ReadJsonFile(filePath string) (tracks []types.TrackInfo, err error) {
+	log.Println("Reading JSON:", filePath)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read input file %s: %w", filePath, err)
+	}
+	defer f.Close()
+
+	err = json.NewDecoder(f).Decode(&tracks)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse JSON %s: %w", filePath, err)
 	}
 
 	return tracks, nil
