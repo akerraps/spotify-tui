@@ -24,10 +24,9 @@ func songExists(prefix string) (bool, error) {
 func writeMetadata(file string, song types.TrackInfo) error {
 
 	err := taglib.WriteTags(file, map[string][]string{
-		taglib.AlbumArtist: song.AlbumArtist,
-		taglib.Album:       {song.Album},
-		taglib.Artist:      song.Artists,
-		taglib.Genre:       song.Genres,
+		taglib.Album:  {song.Album},
+		taglib.Artist: song.Artists,
+		taglib.Genre:  song.Genres,
 	}, 0)
 	if err != nil {
 		return err
@@ -43,16 +42,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 	for _, song := range tracks {
 
-		if opts.NoAPI == false {
-			info, err := GetSongInfo(song.Title, song.Artists)
-			if err != nil {
-				return err
-			}
-
-			song.Title = info.Title
-			song.Artists = info.Artists
-			song.Genres = append(song.Genres, info.Genres...)
-		}
+		log.Printf("fetching %s - %s", song.Title, strings.Join(song.Artists, ", "))
 
 		output := filepath.Join(opts.OutputDir, song.Title)
 
@@ -64,15 +54,35 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		if exists {
 			log.Printf("already exists: %s - %s", song.Title, strings.Join(song.Artists, ", "))
 
-			err = writeMetadata(output+".mp3", song)
-			if err != nil {
-				log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
-				continue
+			if opts.NoAPI == false {
+				info, err := GetSongInfo(song.Title, song.Artists)
+				if err != nil {
+					return err
+				}
+
+				song.Title = info.Title
+				song.Artists = info.Artists
+				song.Genres = append(song.Genres, info.Genres...)
+
+				err = writeMetadata(output+".mp3", song)
+				if err != nil {
+					log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
+					continue
+				}
 			}
 			continue
 		}
 
-		log.Printf("fetching %s - %s", song.Title, strings.Join(song.Artists, ", "))
+		if opts.NoAPI == false {
+			info, err := GetSongInfo(song.Title, song.Artists)
+			if err != nil {
+				return err
+			}
+
+			song.Title = info.Title
+			song.Artists = info.Artists
+			song.Genres = append(song.Genres, info.Genres...)
+		}
 
 		artists := strings.Join(song.Artists, " ")
 		search := fmt.Sprintf(
@@ -86,6 +96,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 			"--restrict-filenames",
 			"--quiet",
 			"--no-warnings",
+			"--embed-thumbnail",
 			"--no-playlist",
 			"-t", "mp3",
 			"--audio-quality", "0",

@@ -9,8 +9,7 @@ type TrackInfo struct {
 	Title   string
 	Artists []string
 
-	Album       string
-	AlbumArtist []string
+	Album string
 
 	Genres []string
 }

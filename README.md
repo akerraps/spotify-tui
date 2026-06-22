@@ -8,23 +8,23 @@ It is not intended to be a production-ready application. The codebase is experim
 
 ## Overview
 
-tunectl is a terminal tool for downloading individual songs using yt-dlp, with optional metadata enrichment via external APIs.
+`tunectl` is a terminal tool for downloading individual songs using yt-dlp, with optional metadata enrichment via external APIs.
 
 It operates in two modes:
 
 ### API-enabled mode
 
-When enabled, the input is enriched using music metadata services (such as MusicBrainz). This can normalize artist names, fix typos, and complete missing fields like genre before building the final download query.
+When enabled, the input is enriched using music metadata services (MusicBrainz public API). This can normalize artist names, fix typos, and complete missing fields before building the final download query.
 
 The downside is that incorrect metadata resolution **may lead to downloading a different track than intended**, since the final match depends on external sources.
 
 ### No-API mode
 
-When disabled, no metadata enrichment is performed. The raw input is used directly to build a search query in the form "<song> <artist> song", which is then passed to yt-dlp to download the first matching result.
+When disabled, no metadata enrichment is performed. The raw input is used directly to build a search query, which is then passed to yt-dlp to download the first matching result.
 
 ## CLI Usage
 
-The main command provided by tunectl is songs, which is used to download tracks directly from the terminal.
+The main command provided by tunectl is `songs`, which is used to download tracks directly from the terminal.
 
 Basic usage:
 
@@ -35,13 +35,13 @@ tunectl songs "song;artist;genre"
 Each input is a semicolon-separated string with the following structure:
 
 song: track name
-artist: artist or group name
+artist: artist name(s). Multiple values can be provided as a comma-separated, quoted list.
 genre: optional genre tag used for filtering or enrichment
 
 Multiple songs can be provided in a single command:
 
 ```bash
-songs tunectl "Title;Artist 1;Genre" "Title;Artist 2;Genre"
+songs tunectl "Title 1;Artist 1;Genre" "Title 2;Artist 2;Genre"
 ```
 
 When multiple entries are passed, each one is processed independently.
@@ -56,18 +56,12 @@ In this mode:
 - misspellings and incomplete inputs may be corrected
 - additional metadata may be resolved via MusicBrainz
 
-If the --no-api flag is used, metadata enrichment is disabled.
-
-In this case:
-
-- the input is used directly to build the search query
-- the query format becomes: "<song> <artist> song"
-- genre is not used for filtering but is still appended to the final search query when present
+If the `--no-api` flag is used, metadata enrichment is disabled.
 
 Important note:
 
 > [!WARNING]
-> If API mode is enabled, all fields may be replaced by resolved metadata except genre, which is always preserved.
+> If API mode is enabled, all fields may be replaced by resolved metadata except genre, which is always appended to the API results.
 
 ## Download behavior
 
@@ -83,7 +77,7 @@ The output directory can be overridden via CLI flags.
 
 ## Cache management
 
-`tunectl` stores the `yt-dlp` binary in the user’s local cache directory.
+Tunectl stores the `yt-dlp` binary in the user’s local cache directory.
 
 A cache management command is provided:
 
@@ -91,15 +85,7 @@ A cache management command is provided:
 tunectl cache --clear
 ```
 
-or
-
-```bash
-tunectl cache -c
-```
-
 This removes the cached `yt-dlp` binary.
-
-### Purpose
 
 This is intended as a recovery mechanism in cases where:
 
@@ -111,7 +97,7 @@ On the next execution, `tunectl` will automatically re-download the latest avail
 
 ## File input usage (CSV / JSON)
 
-tunectl supports downloading songs from structured files using the `file` command.
+Tunectl supports downloading songs from structured files using the `file` command.
 
 This mode allows batch processing of tracks defined in a CSV or JSON file.
 
@@ -126,7 +112,8 @@ tunectl file --csv --data songs.csv
 Each CSV row must follow this format:
 
 ```csv
-Title;Artist 1, Artist 2";Album
+Title,Artists,Album
+What the Funk,"Gustavo Mota, Naizon",What the Funk
 ```
 
 Additional columns are ignored

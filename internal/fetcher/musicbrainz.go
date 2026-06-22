@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"akerraps/tunectl/internal/types"
 
@@ -65,7 +66,25 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 func getArtistInfo(artistID string) ([]string, error) {
 	client := createClient()
 
-	resp, err := client.SearchArtist("arid:"+artistID, 1, 0)
+	var resp *gomusicbrainz.ArtistSearchResponse
+	var err error
+
+	for attempt := 1; attempt <= 3; attempt++ {
+		resp, err = client.SearchArtist("arid:"+artistID, 1, 0)
+
+		if err == nil {
+			break
+		}
+
+		log.Printf(
+			"SearchArtist failed (%d/3): %v",
+			attempt,
+			err,
+		)
+
+		time.Sleep(time.Duration(attempt) * time.Second * 2)
+	}
+
 	if err != nil {
 		return nil, err
 	}
