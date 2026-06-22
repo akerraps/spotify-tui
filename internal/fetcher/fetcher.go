@@ -49,12 +49,6 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 	for _, song := range tracks {
 
-		slog.Info(
-			"fetching song metadata",
-			"title", song.Title,
-			"artists", strings.Join(song.Artists, ", "),
-		)
-
 		output := filepath.Join(opts.OutputDir, song.Title)
 
 		exists, err := songExists(output)
@@ -84,13 +78,6 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 				song.Title = info.Title
 				song.Artists = info.Artists
 				song.Genres = append(song.Genres, info.Genres...)
-
-				slog.Debug(
-					"metadata resolved",
-					"title", song.Title,
-					"artists", song.Artists,
-					"genres", song.Genres,
-				)
 
 				err = writeMetadata(output+".mp3", song)
 				if err != nil {
@@ -165,7 +152,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 		err = writeMetadata(output+".mp3", song)
 		if err != nil {
-			log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
+			log.Printf("coudnt write metadata to %s - %s: %v", song.Title, song.Artists, err)
 			continue
 		} else {
 			slog.Debug(
