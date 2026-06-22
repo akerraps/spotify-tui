@@ -5,13 +5,17 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"strings"
 )
 
 func ReadCsvFile(filePath string) (tracks []types.TrackInfo, err error) {
-	log.Println("Reading CSV:", filePath)
+	slog.Info(
+		"reading csv file",
+		"file", filePath,
+	)
+
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read input file %s: %w", filePath, err)
@@ -20,6 +24,12 @@ func ReadCsvFile(filePath string) (tracks []types.TrackInfo, err error) {
 
 	csvReader := csv.NewReader(f)
 	records, err := csvReader.ReadAll()
+	slog.Debug(
+		"csv loaded",
+		"file", filePath,
+		"rows", len(records)-1,
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("unable to read input file %s: %w", filePath, err)
 	}
@@ -27,7 +37,11 @@ func ReadCsvFile(filePath string) (tracks []types.TrackInfo, err error) {
 	records = records[1:]
 
 	for _, row := range records {
-		if len(row) < 3 {
+		if len(row) < 4 {
+			slog.Warn(
+				"skipping invalid csv row",
+				"columns", len(row),
+			)
 			continue
 		}
 
@@ -42,14 +56,30 @@ func ReadCsvFile(filePath string) (tracks []types.TrackInfo, err error) {
 		song.Artists = artists
 
 		song.Album = row[2]
+
+		genres := strings.Split(row[3], ",")
+		for i := range genres {
+			genres[i] = strings.TrimSpace(genres[i])
+		}
+		song.Genres = genres
+
 		tracks = append(tracks, song)
 	}
+
+	slog.Info(
+		"csv parsed",
+		"file", filePath,
+		"tracks", len(tracks),
+	)
 
 	return tracks, nil
 }
 
 func ReadJsonFile(filePath string) (tracks []types.TrackInfo, err error) {
-	log.Println("Reading JSON:", filePath)
+	slog.Info(
+		"reading json file",
+		"file", filePath,
+	)
 
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -61,6 +91,12 @@ func ReadJsonFile(filePath string) (tracks []types.TrackInfo, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse JSON %s: %w", filePath, err)
 	}
+
+	slog.Info(
+		"json parsed",
+		"file", filePath,
+		"tracks", len(tracks),
+	)
 
 	return tracks, nil
 }

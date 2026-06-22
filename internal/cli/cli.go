@@ -6,7 +6,7 @@ import (
 	"akerraps/tunectl/internal/types"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -29,6 +29,32 @@ func RunCli() {
 	cliApp := &urfave.App{
 		Name:  "tunectl",
 		Usage: "Manage your playlists and songs",
+
+		Flags: []urfave.Flag{
+			&urfave.BoolFlag{
+				Name:  "debug",
+				Usage: "enable debug logs",
+			},
+		},
+
+		Before: func(c *urfave.Context) error {
+			debug := c.Bool("debug")
+
+			level := slog.LevelInfo
+			if debug {
+				level = slog.LevelDebug
+			}
+
+			handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+				Level: level,
+			})
+
+			logger := slog.New(handler)
+			slog.SetDefault(logger)
+
+			return nil
+		},
+
 		Commands: []*urfave.Command{
 			{
 				Name:  "cache",
@@ -43,17 +69,16 @@ func RunCli() {
 				Action: func(c *urfave.Context) error {
 					if c.Bool("clear") {
 						return cache.ClearYtDlp()
-					} else {
-						return fmt.Errorf("no valid flag provided")
 					}
+					return fmt.Errorf("no valid flag provided")
 				},
 			},
+
 			{
 				Name:      "songs",
 				Usage:     "Download songs",
 				ArgsUsage: "<song>",
 				Flags: []urfave.Flag{
-
 					&urfave.StringFlag{
 						Name:    "output",
 						Aliases: []string{"o"},
@@ -66,7 +91,6 @@ func RunCli() {
 				},
 
 				Action: func(c *urfave.Context) error {
-
 					if c.NArg() == 0 {
 						return fmt.Errorf("you must specify at least one song")
 					}
@@ -76,9 +100,9 @@ func RunCli() {
 					if out := c.String("output"); out != "" {
 						opts.OutputDir = out
 					} else {
-						log.Printf(
-							"warning: output directory not specified, using default: %s",
-							opts.OutputDir,
+						slog.Warn(
+							"output directory not specified, using default",
+							"output_dir", opts.OutputDir,
 						)
 					}
 
@@ -98,7 +122,7 @@ func RunCli() {
 						}
 
 						if len(parts) > 1 {
-							artists := []string{strings.TrimSpace(parts[1])}
+							artists := strings.Split(parts[1], ",")
 							for i := range artists {
 								artists[i] = strings.TrimSpace(artists[i])
 							}
@@ -106,16 +130,20 @@ func RunCli() {
 						}
 
 						if len(parts) > 2 {
-							track.Genres = []string{strings.TrimSpace(parts[2])}
+							genres := strings.Split(parts[2], ",")
+							for i := range genres {
+								genres[i] = strings.TrimSpace(genres[i])
+							}
+							track.Genres = genres
 						}
 
 						tracks = append(tracks, track)
 					}
 
 					return fetcher.FetchAudio(tracks, opts)
-
 				},
 			},
+
 			{
 				Name:  "file",
 				Usage: "Download data from a file",
@@ -132,7 +160,8 @@ func RunCli() {
 						Name:    "data",
 						Aliases: []string{"d"},
 						Usage:   "Data file path",
-					}, &urfave.StringFlag{
+					},
+					&urfave.StringFlag{
 						Name:    "output",
 						Aliases: []string{"o"},
 						Usage:   "Directory where songs will be downloaded",
@@ -142,16 +171,16 @@ func RunCli() {
 						Usage: "Omit MusicBrainz api usage",
 					},
 				},
-				Action: func(c *urfave.Context) error {
 
+				Action: func(c *urfave.Context) error {
 					opts := types.DefaultOptions()
 
 					if out := c.String("output"); out != "" {
 						opts.OutputDir = out
 					} else {
-						log.Printf(
-							"warning: output directory not specified, using default: %s",
-							opts.OutputDir,
+						slog.Warn(
+							"output directory not specified, using default",
+							"output_dir", opts.OutputDir,
 						)
 					}
 
@@ -161,7 +190,7 @@ func RunCli() {
 					json := c.Bool("json")
 
 					if csv == json {
-						return fmt.Errorf("You must choose file type")
+						return fmt.Errorf("you must choose file type")
 					}
 
 					file := c.String("data")
@@ -169,14 +198,19 @@ func RunCli() {
 					var tracks []types.TrackInfo
 					var err error
 
-					if csv == true {
+					if csv {
 						tracks, err = fetcher.ReadCsvFile(file)
 					} else {
 						tracks, err = fetcher.ReadJsonFile(file)
 					}
 
 					if err != nil {
-						log.Fatal(err)
+						slog.Error(
+							"failed to read input file",
+							"file", file,
+							"err", err,
+						)
+						os.Exit(1)
 					}
 
 					return fetcher.FetchAudio(tracks, opts)
@@ -187,6 +221,10 @@ func RunCli() {
 
 	err := cliApp.RunContext(ctx, os.Args)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(
+			"command execution failed",
+			"err", err,
+		)
+		os.Exit(1)
 	}
 }

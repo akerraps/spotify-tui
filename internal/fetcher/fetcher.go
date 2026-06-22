@@ -3,6 +3,7 @@ package fetcher
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -36,13 +37,23 @@ func writeMetadata(file string, song types.TrackInfo) error {
 
 func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 	bin, err := cache.GetYtDlp()
+
 	if err != nil {
 		return err
+	} else {
+		slog.Debug(
+			"using yt-dlp binary",
+			"path", bin,
+		)
 	}
 
 	for _, song := range tracks {
 
-		log.Printf("fetching %s - %s", song.Title, strings.Join(song.Artists, ", "))
+		slog.Info(
+			"fetching song metadata",
+			"title", song.Title,
+			"artists", strings.Join(song.Artists, ", "),
+		)
 
 		output := filepath.Join(opts.OutputDir, song.Title)
 
@@ -52,9 +63,19 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		}
 
 		if exists {
-			log.Printf("already exists: %s - %s", song.Title, strings.Join(song.Artists, ", "))
+			slog.Info(
+				"song already exists",
+				"title", song.Title,
+				"artists", song.Artists,
+			)
 
 			if opts.NoAPI == false {
+				slog.Debug(
+					"fetching metadata from api",
+					"title", song.Title,
+					"artists", song.Artists,
+				)
+
 				info, err := GetSongInfo(song.Title, song.Artists)
 				if err != nil {
 					return err
@@ -64,9 +85,22 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 				song.Artists = info.Artists
 				song.Genres = append(song.Genres, info.Genres...)
 
+				slog.Debug(
+					"metadata resolved",
+					"title", song.Title,
+					"artists", song.Artists,
+					"genres", song.Genres,
+				)
+
 				err = writeMetadata(output+".mp3", song)
 				if err != nil {
-					log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
+					slog.Warn(
+						"failed to write metadata",
+						"title", song.Title,
+						"artists", song.Artists,
+						"file", output+".mp3",
+						"err", err,
+					)
 					continue
 				}
 			}
@@ -91,6 +125,13 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 			artists,
 		)
 
+		slog.Debug(
+			"starting download",
+			"title", song.Title,
+			"artists", song.Artists,
+			"query", search,
+		)
+
 		cmd := exec.Command(bin,
 			"-x",
 			"--restrict-filenames",
@@ -107,16 +148,31 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		_, err = cmd.Output()
 
 		if err != nil {
-			log.Printf("failed to fetch %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
+			slog.Error(
+				"download failed",
+				"title", song.Title,
+				"artists", song.Artists,
+				"err", err,
+			)
 			continue
 		} else {
-			log.Printf("fetched %s - %s", song.Title, strings.Join(song.Artists, ", "))
+			slog.Info(
+				"download completed",
+				"title", song.Title,
+				"artists", song.Artists,
+			)
 		}
 
 		err = writeMetadata(output+".mp3", song)
 		if err != nil {
 			log.Printf("coudnt write metadata to %s - %s: %v", song.Title, strings.Join(song.Artists, ", "), err)
 			continue
+		} else {
+			slog.Debug(
+				"metadata written",
+				"title", song.Title,
+				"file", output+".mp3",
+			)
 		}
 	}
 

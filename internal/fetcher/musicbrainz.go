@@ -2,7 +2,7 @@ package fetcher
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -24,6 +24,12 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 }
 
 func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error) {
+	slog.Debug(
+		"searching musicbrainz recording",
+		"song", song,
+		"artists", artist,
+	)
+
 	var query string
 	client := createClient()
 
@@ -37,15 +43,40 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 	} else {
 		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
 	}
+	slog.Debug(
+		"musicbrainz query built",
+		"query", query,
+	)
 
 	resp, err := client.SearchRecording(query, 1, 0)
 	if err != nil {
-		return info, fmt.Errorf("cannot fetch \"%s - %s\" song data: %w", song, artist, err)
+		slog.Error(
+			"musicbrainz recording search failed",
+			"song", song,
+			"artists", artist,
+			"err", err,
+		)
+
+		return info, fmt.Errorf(
+			"cannot fetch \"%s - %s\" song data: %w",
+			song,
+			artist,
+			err,
+		)
 	}
 
 	if len(resp.Recordings) == 0 {
-		log.Printf("no information found for song \"%s\" and artist \"%s\"\n", song, artist)
+		slog.Warn(
+			"no information found for song",
+			"song", song,
+			"artists", artist,
+		)
 	} else {
+		slog.Debug(
+			"recording found",
+			"title", info.Title,
+			"artists", info.Artists,
+		)
 
 		info.Artists = info.Artists[:0]
 		info.Title = resp.Recordings[0].Title
@@ -58,12 +89,25 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 		if err != nil {
 			return info, err
 		}
+
+		slog.Debug(
+			"metadata enriched",
+			"title", info.Title,
+			"artists", info.Artists,
+			"genres", info.Genres,
+		)
+
 	}
 
 	return info, err
 }
 
 func getArtistInfo(artistID string) ([]string, error) {
+	slog.Debug(
+		"fetching artist information",
+		"artist_id", artistID,
+	)
+
 	client := createClient()
 
 	var resp *gomusicbrainz.ArtistSearchResponse
@@ -76,16 +120,24 @@ func getArtistInfo(artistID string) ([]string, error) {
 			break
 		}
 
-		log.Printf(
-			"SearchArtist failed (%d/3): %v",
-			attempt,
-			err,
+		slog.Warn(
+			"artist lookup failed, retrying",
+			"attempt", attempt,
+			"max_attempts", 3,
+			"artist_id", artistID,
+			"err", err,
 		)
 
 		time.Sleep(time.Duration(attempt) * time.Second * 2)
 	}
 
 	if err != nil {
+		slog.Error(
+			"artist lookup failed",
+			"artist_id", artistID,
+			"err", err,
+		)
+
 		return nil, err
 	}
 
@@ -110,6 +162,12 @@ func getArtistInfo(artistID string) ([]string, error) {
 			names = append(names, cases.Title(language.English).String(tag.Name))
 		}
 	}
+
+	slog.Debug(
+		"artist genres resolved",
+		"artist_id", artistID,
+		"genres", names,
+	)
 
 	return names, nil
 }
