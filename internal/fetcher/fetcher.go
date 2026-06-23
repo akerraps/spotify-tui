@@ -2,7 +2,6 @@ package fetcher
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"os/exec"
 	"path/filepath"
@@ -72,7 +71,13 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 				info, err := GetSongInfo(song.Title, song.Artists)
 				if err != nil {
-					return err
+					slog.Error(
+						"failed to fetch metadata, skipping song",
+						"song", song.Title,
+						"artists", song.Artists,
+						"err", err,
+					)
+					continue
 				}
 
 				song.Title = info.Title
@@ -97,7 +102,13 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		if opts.NoAPI == false {
 			info, err := GetSongInfo(song.Title, song.Artists)
 			if err != nil {
-				return err
+				slog.Error(
+					"failed to fetch metadata, skipping song",
+					"song", song.Title,
+					"artists", song.Artists,
+					"err", err,
+				)
+				continue
 			}
 
 			song.Title = info.Title
@@ -152,7 +163,12 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 		err = writeMetadata(output+".mp3", song)
 		if err != nil {
-			log.Printf("coudnt write metadata to %s - %s: %v", song.Title, song.Artists, err)
+			slog.Warn(
+				"failed to write metadata",
+				"song", song.Title,
+				"artists", song.Artists,
+				"err", err,
+			)
 			continue
 		} else {
 			slog.Debug(

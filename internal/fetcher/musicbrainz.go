@@ -30,33 +30,35 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 		"artists", artist,
 	)
 
-	var query string
 	client := createClient()
 
-	info = types.TrackInfo{
-		Title:   song,
-		Artists: artist,
-	}
-
+	query := ""
 	if len(artist) == 0 {
 		query = fmt.Sprintf(`recording:"%s"`, song)
 	} else {
 		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
 	}
-	slog.Debug(
-		"musicbrainz query built",
-		"query", query,
-	)
 
-	resp, err := client.SearchRecording(query, 1, 0)
-	if err != nil {
-		slog.Error(
-			"musicbrainz recording search failed",
-			"song", song,
-			"artists", artist,
+	var resp *gomusicbrainz.RecordingSearchResponse
+
+	for attempt := 1; attempt <= 3; attempt++ {
+		resp, err = client.SearchRecording(query, 1, 0)
+
+		if err == nil {
+			break
+		}
+
+		slog.Warn(
+			"musicbrainz recording search failed, retrying",
+			"attempt", attempt,
 			"err", err,
+			"song", song,
 		)
 
+		time.Sleep(time.Duration(attempt) * time.Second * 2)
+	}
+
+	if err != nil {
 		return info, fmt.Errorf(
 			"cannot fetch \"%s - %s\" song data: %w",
 			song,
