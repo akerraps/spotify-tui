@@ -36,7 +36,7 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 	if len(artist) == 0 {
 		query = fmt.Sprintf(`recording:"%s"`, song)
 	} else {
-		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist)
+		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist[0])
 	}
 
 	var resp *gomusicbrainz.RecordingSearchResponse
