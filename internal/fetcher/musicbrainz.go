@@ -24,25 +24,25 @@ func createClient() (client *gomusicbrainz.WS2Client) {
 	return client
 }
 
-func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error) {
+func GetSongInfo(song string, artists []string, genres []string) (info types.TrackInfo, err error) {
 	slog.Debug(
 		"searching musicbrainz recording",
 		"song", song,
-		"artists", artist,
+		"artists", artists,
 	)
 
 	client := createClient()
 
 	info = types.TrackInfo{
 		Title:   song,
-		Artists: artist,
+		Artists: artists,
 	}
 
 	query := ""
-	if len(artist) == 0 {
+	if len(artists) == 0 {
 		query = fmt.Sprintf(`recording:"%s"`, song)
 	} else {
-		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artist[0])
+		query = fmt.Sprintf(`recording:"%s" AND artist:%s`, song, artists[0])
 	}
 
 	var resp *gomusicbrainz.RecordingSearchResponse
@@ -68,7 +68,7 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 		return info, fmt.Errorf(
 			"cannot fetch \"%s - %s\" song data: %w",
 			song,
-			artist,
+			artists,
 			err,
 		)
 	}
@@ -77,7 +77,7 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 		slog.Warn(
 			"no information found for song",
 			"song", song,
-			"artists", artist,
+			"artists", artists,
 		)
 	} else {
 		slog.Debug(
@@ -93,7 +93,7 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 		}
 		artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
 
-		info.Genres, err = getArtistInfo(artistId)
+		info.Genres, err = getArtistInfo(artistId, genres)
 		if err != nil {
 			return info, err
 		}
@@ -110,7 +110,7 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 	return info, err
 }
 
-func getArtistInfo(artistID string) ([]string, error) {
+func getArtistInfo(artistID string, genres []string) ([]string, error) {
 	slog.Debug(
 		"fetching artist information",
 		"artist_id", artistID,
@@ -149,6 +149,8 @@ func getArtistInfo(artistID string) ([]string, error) {
 		return nil, err
 	}
 
+	c := cases.Title(language.Und) //Undefined lang.
+
 	tags := resp.Artists[0].Tags
 
 	names := make([]string, 0, len(tags))
@@ -160,7 +162,10 @@ func getArtistInfo(artistID string) ([]string, error) {
 		var exists bool
 
 		if isGenre {
-			exists = slices.Contains(names, tagName)
+			exists = slices.Contains(names, c.String(tagName))
+			if !exists {
+				exists = slices.Contains(genres, c.String(tagName))
+			}
 		}
 
 		slog.Debug(
@@ -178,7 +183,7 @@ func getArtistInfo(artistID string) ([]string, error) {
 		if !exists {
 			names = append(
 				names,
-				cases.Title(language.English).String(tag.Name),
+				c.String(tag.Name),
 			)
 
 			slog.Debug(
