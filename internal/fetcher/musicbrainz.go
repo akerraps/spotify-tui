@@ -3,6 +3,7 @@ package fetcher
 import (
 	"fmt"
 	"log/slog"
+	"slices"
 	"strings"
 	"time"
 
@@ -32,6 +33,11 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 
 	client := createClient()
 
+	info = types.TrackInfo{
+		Title:   song,
+		Artists: artist,
+	}
+
 	query := ""
 	if len(artist) == 0 {
 		query = fmt.Sprintf(`recording:"%s"`, song)
@@ -55,7 +61,7 @@ func GetSongInfo(song string, artist []string) (info types.TrackInfo, err error)
 			"song", song,
 		)
 
-		time.Sleep(time.Duration(attempt) * time.Second * 2)
+		time.Sleep(time.Duration(attempt) * time.Second * 5)
 	}
 
 	if err != nil {
@@ -130,7 +136,7 @@ func getArtistInfo(artistID string) ([]string, error) {
 			"err", err,
 		)
 
-		time.Sleep(time.Duration(attempt) * time.Second * 2)
+		time.Sleep(time.Duration(attempt) * time.Second * 5)
 	}
 
 	if err != nil {
@@ -147,21 +153,38 @@ func getArtistInfo(artistID string) ([]string, error) {
 
 	names := make([]string, 0, len(tags))
 	for _, tag := range tags {
+		tagName := strings.ToLower(tag.Name)
 
-		found := false
+		isGenre := slices.Contains(types.GenreFamilies, tagName)
 
-		for _, genre := range types.GenreFamilies {
-			if strings.Contains(
-				strings.ToLower(tag.Name),
-				strings.ToLower(genre),
-			) {
-				found = true
-				break
-			}
+		var exists bool
+
+		if isGenre {
+			exists = slices.Contains(names, tagName)
 		}
 
-		if found {
-			names = append(names, cases.Title(language.English).String(tag.Name))
+		slog.Debug(
+			"processing artist tag",
+			"tag", tag.Name,
+			"normalized", tagName,
+			"is_genre", isGenre,
+			"already_added", exists,
+		)
+
+		if !isGenre {
+			continue
+		}
+
+		if !exists {
+			names = append(
+				names,
+				cases.Title(language.English).String(tag.Name),
+			)
+
+			slog.Debug(
+				"genre added",
+				"genre", tag.Name,
+			)
 		}
 	}
 
