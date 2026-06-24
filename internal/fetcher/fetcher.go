@@ -47,6 +47,11 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 	}
 
 	for _, song := range tracks {
+		slog.Debug(
+			"processing track",
+			"title", song.Title,
+			"artists", song.Artists,
+		)
 
 		output := filepath.Join(opts.OutputDir, song.Title)
 
