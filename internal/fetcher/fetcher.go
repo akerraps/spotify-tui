@@ -30,6 +30,13 @@ func writeMetadata(file string, song types.TrackInfo) error {
 	}, 0)
 	if err != nil {
 		return err
+	} else {
+		slog.Debug(
+			"metadata writen",
+			"title", song.Title,
+			"artists", song.Artists,
+			"genres", song.Genres,
+		)
 	}
 	return nil
 }
@@ -143,7 +150,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 			"--embed-thumbnail",
 			"--no-playlist",
 			"-t", "mp3",
-			"--audio-quality", "0",
+			"--audio-quality", "128K",
 			search,
 			"-o", output,
 		)

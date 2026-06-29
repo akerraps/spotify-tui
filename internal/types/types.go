@@ -81,6 +81,7 @@ var GenreFamilies = []string{
 	"gothic rock",
 	"rock gótico",
 	"oi!",
+	"oi",
 	"rockabilly",
 
 	// Metal
