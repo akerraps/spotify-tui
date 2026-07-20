@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"akerraps/tunectl/internal/cache"
+	"akerraps/tunectl/internal/musicbrainz"
 	"akerraps/tunectl/internal/types"
 
 	"go.senan.xyz/taglib"
@@ -91,7 +92,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 					"artists", song.Artists,
 				)
 
-				info, err := GetSongInfo(song.Title, song.Artists, song.Genres)
+				info, err := musicbrainz.GetSongInfo(song.Title, song.Artists, song.Genres)
 				if err != nil {
 					slog.Error(
 						"failed to fetch metadata, skipping song",
@@ -122,7 +123,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		}
 
 		if opts.NoAPI == false {
-			info, err := GetSongInfo(song.Title, song.Artists, song.Genres)
+			info, err := musicbrainz.GetSongInfo(song.Title, song.Artists, song.Genres)
 			if err != nil {
 				slog.Error(
 					"failed to fetch metadata, skipping song",

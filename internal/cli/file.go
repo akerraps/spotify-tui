@@ -2,7 +2,7 @@ package cli
 
 import (
 	"akerraps/tunectl/internal/fetcher"
-	"akerraps/tunectl/internal/fileReader"
+	"akerraps/tunectl/internal/reader"
 	"akerraps/tunectl/internal/types"
 	"fmt"
 	"log/slog"
@@ -68,8 +68,8 @@ func loadTracks(c *urfave.Context, file string) ([]types.TrackInfo, error) {
 	}
 
 	if csv {
-		return fileReader.ReadCsvFile(file)
+		return reader.ReadCsvFile(file)
 	}
 
-	return fileReader.ReadJsonFile(file)
+	return reader.ReadJsonFile(file)
 }

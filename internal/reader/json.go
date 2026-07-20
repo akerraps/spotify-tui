@@ -1,4 +1,4 @@
-package fileReader
+package reader
 
 import (
 	"akerraps/tunectl/internal/types"
