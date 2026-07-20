@@ -13,11 +13,14 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func songExists(prefix string) (bool, error) {
+func songExists(path string) (bool, error) {
+	prefix := strings.TrimSuffix(path, filepath.Ext(path))
+
 	matches, err := filepath.Glob(prefix + ".*")
 	if err != nil {
 		return false, err
 	}
+
 	return len(matches) > 0, nil
 }
 
@@ -27,6 +30,7 @@ func writeMetadata(file string, song types.TrackInfo) error {
 		taglib.Album:  {song.Album},
 		taglib.Artist: song.Artists,
 		taglib.Genre:  song.Genres,
+		taglib.Title:  {song.Title},
 	}, 0)
 	if err != nil {
 		return err
@@ -36,6 +40,7 @@ func writeMetadata(file string, song types.TrackInfo) error {
 			"title", song.Title,
 			"artists", song.Artists,
 			"genres", song.Genres,
+			"album", song.Album,
 		)
 	}
 	return nil
@@ -60,7 +65,12 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 			"artists", song.Artists,
 		)
 
-		output := filepath.Join(opts.OutputDir, song.Title)
+		fileName := strings.ReplaceAll(
+			song.Title+"_"+song.Artists[0]+".mp3",
+			" ",
+			"_",
+		)
+		output := filepath.Join(opts.OutputDir, fileName)
 
 		exists, err := songExists(output)
 		if err != nil {
@@ -96,13 +106,13 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 				song.Artists = info.Artists
 				song.Genres = append(song.Genres, info.Genres...)
 
-				err = writeMetadata(output+".mp3", song)
+				err = writeMetadata(output, song)
 				if err != nil {
 					slog.Warn(
 						"failed to write metadata",
 						"title", song.Title,
 						"artists", song.Artists,
-						"file", output+".mp3",
+						"file", output,
 						"err", err,
 					)
 					continue
@@ -173,7 +183,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 			)
 		}
 
-		err = writeMetadata(output+".mp3", song)
+		err = writeMetadata(output, song)
 		if err != nil {
 			slog.Warn(
 				"failed to write metadata",
@@ -186,7 +196,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 			slog.Debug(
 				"metadata written",
 				"title", song.Title,
-				"file", output+".mp3",
+				"file", output,
 			)
 		}
 	}
