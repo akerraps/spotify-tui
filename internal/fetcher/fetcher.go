@@ -1,14 +1,11 @@
 package fetcher
 
 import (
-	"fmt"
 	"log/slog"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"akerraps/tunectl/internal/cache"
-	"akerraps/tunectl/internal/musicbrainz"
 	"akerraps/tunectl/internal/types"
 )
 
@@ -28,155 +25,21 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 
 	if err != nil {
 		return err
-	} else {
-		slog.Debug(
-			"using yt-dlp binary",
-			"path", bin,
-		)
 	}
+
+	slog.Debug(
+		"using yt-dlp binary",
+		"path", bin,
+	)
 
 	for _, song := range tracks {
-		slog.Debug(
-			"processing track",
-			"title", song.Title,
-			"artists", song.Artists,
-		)
-
-		fileName := strings.ReplaceAll(
-			song.Title+"_"+song.Artists[0]+".mp3",
-			" ",
-			"_",
-		)
-		output := filepath.Join(opts.OutputDir, fileName)
-
-		exists, err := songExists(output)
-		if err != nil {
-			return err
-		}
-
-		if exists {
-			slog.Info(
-				"song already exists",
-				"title", song.Title,
-				"artists", song.Artists,
-			)
-
-			if opts.NoAPI == false {
-				slog.Debug(
-					"fetching metadata from api",
-					"title", song.Title,
-					"artists", song.Artists,
-				)
-
-				info, err := musicbrainz.GetSongInfo(song.Title, song.Artists, song.Genres)
-				if err != nil {
-					slog.Error(
-						"failed to fetch metadata, skipping song",
-						"song", song.Title,
-						"artists", song.Artists,
-						"err", err,
-					)
-					continue
-				}
-
-				song.Title = info.Title
-				song.Artists = info.Artists
-				song.Genres = append(song.Genres, info.Genres...)
-
-				err = writeMetadata(output, song)
-				if err != nil {
-					slog.Warn(
-						"failed to write metadata",
-						"title", song.Title,
-						"artists", song.Artists,
-						"file", output,
-						"err", err,
-					)
-					continue
-				}
-			}
-			continue
-		}
-
-		if opts.NoAPI == false {
-			info, err := musicbrainz.GetSongInfo(song.Title, song.Artists, song.Genres)
-			if err != nil {
-				slog.Error(
-					"failed to fetch metadata, skipping song",
-					"song", song.Title,
-					"artists", song.Artists,
-					"err", err,
-				)
-				continue
-			}
-
-			song.Title = info.Title
-			song.Artists = info.Artists
-			song.Genres = append(song.Genres, info.Genres...)
-		}
-
-		artists := strings.Join(song.Artists, " ")
-		search := fmt.Sprintf(
-			`ytsearch:"%s" %s "song"`,
-			song.Title,
-			artists,
-		)
-
-		slog.Debug(
-			"starting download",
-			"title", song.Title,
-			"artists", song.Artists,
-			"query", search,
-		)
-
-		cmd := exec.Command(bin,
-			"-x",
-			"--restrict-filenames",
-			"--quiet",
-			"--no-warnings",
-			"--embed-thumbnail",
-			"--no-playlist",
-			"-t", "mp3",
-			"--audio-quality", "128K",
-			search,
-			"-o", output,
-		)
-
-		_, err = cmd.Output()
-
-		if err != nil {
+		if err := processTrack(bin, song, opts); err != nil {
 			slog.Error(
-				"download failed",
+				"failed to process track",
 				"title", song.Title,
-				"artists", song.Artists,
 				"err", err,
-			)
-			continue
-		} else {
-			slog.Info(
-				"download completed",
-				"title", song.Title,
-				"artists", song.Artists,
-			)
-		}
-
-		err = writeMetadata(output, song)
-		if err != nil {
-			slog.Warn(
-				"failed to write metadata",
-				"song", song.Title,
-				"artists", song.Artists,
-				"err", err,
-			)
-			continue
-		} else {
-			slog.Debug(
-				"metadata written",
-				"title", song.Title,
-				"file", output,
 			)
 		}
 	}
-
 	return nil
 }

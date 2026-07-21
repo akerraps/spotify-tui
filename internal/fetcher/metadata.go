@@ -7,7 +7,7 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func writeMetadata(file string, song types.TrackInfo) error {
+func writeMetadata(file string, song types.TrackInfo) {
 
 	err := taglib.WriteTags(file, map[string][]string{
 		taglib.Album:  {song.Album},
@@ -16,7 +16,13 @@ func writeMetadata(file string, song types.TrackInfo) error {
 		taglib.Title:  {song.Title},
 	}, 0)
 	if err != nil {
-		return err
+		slog.Warn(
+			"failed to write metadata",
+			"title", song.Title,
+			"artists", song.Artists,
+			"file", file,
+			"err", err,
+		)
 	} else {
 		slog.Debug(
 			"metadata writen",
@@ -26,5 +32,4 @@ func writeMetadata(file string, song types.TrackInfo) error {
 			"album", song.Album,
 		)
 	}
-	return nil
 }
