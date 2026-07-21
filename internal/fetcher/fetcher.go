@@ -10,8 +10,6 @@ import (
 	"akerraps/tunectl/internal/cache"
 	"akerraps/tunectl/internal/musicbrainz"
 	"akerraps/tunectl/internal/types"
-
-	"go.senan.xyz/taglib"
 )
 
 func songExists(path string) (bool, error) {
@@ -23,28 +21,6 @@ func songExists(path string) (bool, error) {
 	}
 
 	return len(matches) > 0, nil
-}
-
-func writeMetadata(file string, song types.TrackInfo) error {
-
-	err := taglib.WriteTags(file, map[string][]string{
-		taglib.Album:  {song.Album},
-		taglib.Artist: song.Artists,
-		taglib.Genre:  song.Genres,
-		taglib.Title:  {song.Title},
-	}, 0)
-	if err != nil {
-		return err
-	} else {
-		slog.Debug(
-			"metadata writen",
-			"title", song.Title,
-			"artists", song.Artists,
-			"genres", song.Genres,
-			"album", song.Album,
-		)
-	}
-	return nil
 }
 
 func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
