@@ -19,21 +19,42 @@ func searchQuery(song string, artists []string) (query string) {
 	return query
 }
 
-func GetSongInfo(song string, artists []string, genres []string) (info types.TrackInfo, err error) {
+func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchResponse, genres []string) error {
+	info.Artists = info.Artists[:0]
+	info.Title = resp.Recordings[0].Title
+	for _, credit := range resp.Recordings[0].ArtistCredit.NameCredits {
+		info.Artists = append(info.Artists, credit.Artist.Name)
+	}
+	artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
+
+	genres, err := getArtistInfo(artistId, genres)
+	if err != nil {
+		return err
+	}
+
+	info.Genres = genres
+	slog.Debug(
+		"metadata enriched",
+		"title", info.Title,
+		"artists", info.Artists,
+		"genres", info.Genres,
+	)
+
+	return nil
+}
+
+func GetSongInfo(song types.TrackInfo) (info types.TrackInfo, err error) {
 	slog.Debug(
 		"searching musicbrainz recording",
-		"song", song,
-		"artists", artists,
+		"song", song.Title,
+		"artists", song.Artists,
 	)
 
 	client := createClient()
 
-	info = types.TrackInfo{
-		Title:   song,
-		Artists: artists,
-	}
+	info = song
 
-	query := searchQuery(song, artists)
+	query := searchQuery(song.Title, song.Artists)
 
 	var resp *gomusicbrainz.RecordingSearchResponse
 
@@ -48,7 +69,7 @@ func GetSongInfo(song string, artists []string, genres []string) (info types.Tra
 			"musicbrainz recording search failed, retrying",
 			"attempt", attempt,
 			"err", err,
-			"song", song,
+			"song", song.Title,
 		)
 
 		time.Sleep(time.Duration(attempt) * time.Second * 5)
@@ -56,9 +77,9 @@ func GetSongInfo(song string, artists []string, genres []string) (info types.Tra
 
 	if err != nil {
 		return info, fmt.Errorf(
-			"cannot fetch \"%s - %s\" song data: %w",
-			song,
-			artists,
+			`cannot fetch "%s - %v" song data: %w`,
+			song.Title,
+			song.Artists,
 			err,
 		)
 	}
@@ -66,36 +87,21 @@ func GetSongInfo(song string, artists []string, genres []string) (info types.Tra
 	if len(resp.Recordings) == 0 {
 		slog.Warn(
 			"no information found for song",
-			"song", song,
-			"artists", artists,
+			"song", song.Title,
+			"artists", song.Artists,
 		)
-	} else {
-		slog.Debug(
-			"recording found",
-			"title", info.Title,
-			"artists", info.Artists,
-		)
-
-		info.Artists = info.Artists[:0]
-		info.Title = resp.Recordings[0].Title
-		for _, credit := range resp.Recordings[0].ArtistCredit.NameCredits {
-			info.Artists = append(info.Artists, credit.Artist.Name)
-		}
-		artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
-
-		info.Genres, err = getArtistInfo(artistId, genres)
-		if err != nil {
-			return info, err
-		}
-
-		slog.Debug(
-			"metadata enriched",
-			"title", info.Title,
-			"artists", info.Artists,
-			"genres", info.Genres,
-		)
-
+		return info, nil
 	}
 
-	return info, err
+	slog.Debug(
+		"recording found",
+		"title", info.Title,
+		"artists", info.Artists,
+	)
+
+	if err := enrichTrack(&info, resp, song.Genres); err != nil {
+		return info, err
+	}
+
+	return info, nil
 }
