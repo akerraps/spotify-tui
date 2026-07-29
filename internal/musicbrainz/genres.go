@@ -17,42 +17,36 @@ func extractGenres(tags []gomusicbrainz.Tag, existing []string) []string {
 	names := make([]string, 0, len(tags))
 
 	for _, tag := range tags {
-		tagName := strings.ToLower(tag.Name)
+		tagName := strings.ToLower(strings.TrimSpace(tag.Name))
 
 		isGenre := slices.Contains(types.GenreFamilies, tagName)
-
-		var exists bool
-
-		if isGenre {
-			exists = slices.Contains(names, c.String(tagName))
-			if !exists {
-				exists = slices.Contains(existing, c.String(tagName))
-			}
-		}
-
-		slog.Debug(
-			"processing artist tag",
-			"tag", tag.Name,
-			"normalized", tagName,
-			"is_genre", isGenre,
-			"already_added", exists,
-		)
-
 		if !isGenre {
 			continue
 		}
 
-		if !exists {
-			names = append(
-				names,
-				c.String(tag.Name),
-			)
+		genreName := c.String(tagName)
 
-			slog.Debug(
-				"genre added",
-				"genre", tag.Name,
-			)
+		exists := genreExists(names, genreName) ||
+			genreExists(existing, genreName)
+
+		slog.Debug(
+			"processing artist tag",
+			"tag", tag.Name,
+			"normalized", genreName,
+			"is_genre", isGenre,
+			"already_added", exists,
+		)
+
+		if exists {
+			continue
 		}
+
+		names = append(names, genreName)
+
+		slog.Debug(
+			"genre added",
+			"genre", genreName,
+		)
 	}
 
 	slog.Debug(
@@ -61,4 +55,18 @@ func extractGenres(tags []gomusicbrainz.Tag, existing []string) []string {
 	)
 
 	return names
+}
+
+func genreExists(genres []string, candidate string) bool {
+	candidate = strings.ToLower(candidate)
+
+	for _, genre := range genres {
+		genre = strings.ToLower(genre)
+
+		if genre == candidate {
+			return true
+		}
+	}
+
+	return false
 }
