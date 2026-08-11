@@ -38,11 +38,13 @@ func outputPath(song types.TrackInfo, outputDir string) string {
 }
 
 func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
-	slog.Debug(
-		"processing track",
+	log := slog.With(
+		"track_id", song.ID,
 		"title", song.Title,
 		"artists", song.Artists,
 	)
+
+	log.Debug("processing track")
 
 	output := outputPath(song, opts.OutputDir)
 
@@ -52,28 +54,18 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 	}
 
 	if !opts.NoAPI {
-		slog.Debug(
-			"fetching metadata from api",
-			"title", song.Title,
-			"artists", song.Artists,
-		)
+		log.Debug("fetching metadata from api")
 
 		if err := musicbrainz.GetSongInfo(&song); err != nil {
-			slog.Warn(
+			log.Warn(
 				"failed to fetch metadata, using original data",
-				"title", song.Title,
-				"artists", song.Artists,
 				"err", err,
 			)
 		}
 	}
 
 	if exists {
-		slog.Info(
-			"song already exists",
-			"title", song.Title,
-			"artists", song.Artists,
-		)
+		log.Info("song already exists")
 
 		writeMetadata(output, song)
 
@@ -86,10 +78,8 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 		strings.Join(song.Artists, " "),
 	)
 
-	slog.Debug(
+	log.Debug(
 		"starting download",
-		"title", song.Title,
-		"artists", song.Artists,
 		"query", search,
 	)
 
@@ -108,20 +98,15 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 	)
 
 	if _, err := cmd.Output(); err != nil {
-		slog.Error(
+		log.Error(
 			"download failed",
-			"title", song.Title,
-			"artists", song.Artists,
 			"err", err,
 		)
+
 		return nil
 	}
 
-	slog.Info(
-		"download completed",
-		"title", song.Title,
-		"artists", song.Artists,
-	)
+	log.Info("download completed")
 
 	writeMetadata(output, song)
 

@@ -6,6 +6,8 @@ import (
 )
 
 type TrackInfo struct {
+	ID int
+
 	ArtistID string
 
 	Title   string

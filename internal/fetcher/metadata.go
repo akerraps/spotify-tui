@@ -1,14 +1,21 @@
 package fetcher
 
 import (
-	"akerraps/tunectl/internal/types"
 	"log/slog"
 	"strconv"
+
+	"akerraps/tunectl/internal/types"
 
 	"go.senan.xyz/taglib"
 )
 
 func writeMetadata(file string, song types.TrackInfo) {
+	log := slog.With(
+		"track_id", song.ID,
+		"title", song.Title,
+		"artists", song.Artists,
+	)
+
 	tags := map[string][]string{
 		taglib.Album:  {song.Album},
 		taglib.Artist: song.Artists,
@@ -22,10 +29,8 @@ func writeMetadata(file string, song types.TrackInfo) {
 
 	err := taglib.WriteTags(file, tags, 0)
 	if err != nil {
-		slog.Warn(
+		log.Warn(
 			"failed to write metadata",
-			"title", song.Title,
-			"artists", song.Artists,
 			"file", file,
 			"err", err,
 		)
@@ -33,10 +38,8 @@ func writeMetadata(file string, song types.TrackInfo) {
 		return
 	}
 
-	slog.Debug(
+	log.Debug(
 		"metadata written",
-		"title", song.Title,
-		"artists", song.Artists,
 		"genres", song.Genres,
 		"year", song.Year,
 		"album", song.Album,

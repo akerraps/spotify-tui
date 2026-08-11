@@ -1,15 +1,22 @@
 package musicbrainz
 
 import (
-	"akerraps/tunectl/internal/types"
 	"log/slog"
 	"time"
+
+	"akerraps/tunectl/internal/types"
 
 	"github.com/michiwend/gomusicbrainz"
 )
 
 func getArtistInfo(info *types.TrackInfo) error {
-	slog.Debug(
+	log := slog.With(
+		"track_id", info.ID,
+		"title", info.Title,
+		"artists", info.Artists,
+	)
+
+	log.Debug(
 		"fetching artist information",
 		"artist_id", info.ArtistID,
 	)
@@ -19,17 +26,19 @@ func getArtistInfo(info *types.TrackInfo) error {
 	var resp *gomusicbrainz.ArtistSearchResponse
 	var err error
 
-	for attempt := 1; attempt <= 3; attempt++ {
+	const maxAttempts = 3
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		resp, err = client.SearchArtist("arid:"+info.ArtistID, 1, 0)
 
 		if err == nil {
 			break
 		}
 
-		slog.Warn(
+		log.Warn(
 			"artist lookup failed, retrying",
 			"attempt", attempt,
-			"max_attempts", 3,
+			"max_attempts", maxAttempts,
 			"artist_id", info.ArtistID,
 			"err", err,
 		)
@@ -38,7 +47,7 @@ func getArtistInfo(info *types.TrackInfo) error {
 	}
 
 	if err != nil {
-		slog.Error(
+		log.Error(
 			"artist lookup failed",
 			"artist_id", info.ArtistID,
 			"err", err,

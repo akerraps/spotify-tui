@@ -1,10 +1,11 @@
 package musicbrainz
 
 import (
-	"akerraps/tunectl/internal/types"
 	"fmt"
 	"log/slog"
 	"time"
+
+	"akerraps/tunectl/internal/types"
 
 	"github.com/michiwend/gomusicbrainz"
 )
@@ -20,6 +21,12 @@ func searchQuery(song string, artists []string) (query string) {
 }
 
 func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchResponse) error {
+	log := slog.With(
+		"track_id", info.ID,
+		"title", info.Title,
+		"artists", info.Artists,
+	)
+
 	recording := resp.Recordings[0]
 
 	info.Artists = info.Artists[:0]
@@ -29,13 +36,15 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 		info.Artists = append(info.Artists, credit.Artist.Name)
 	}
 
-	info.ArtistID = string(recording.ArtistCredit.NameCredits[0].Artist.ID)
+	info.ArtistID = string(
+		recording.ArtistCredit.NameCredits[0].Artist.ID,
+	)
 
 	if err := getArtistInfo(info); err != nil {
 		return err
 	}
 
-	slog.Debug(
+	log.Debug(
 		"metadata enriched",
 		"title", info.Title,
 		"artists", info.Artists,
@@ -48,11 +57,13 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 }
 
 func GetSongInfo(song *types.TrackInfo) error {
-	slog.Debug(
-		"searching musicbrainz recording",
-		"song", song.Title,
+	log := slog.With(
+		"track_id", song.ID,
+		"title", song.Title,
 		"artists", song.Artists,
 	)
+
+	log.Debug("searching musicbrainz recording")
 
 	client := createClient()
 
@@ -61,18 +72,21 @@ func GetSongInfo(song *types.TrackInfo) error {
 	var resp *gomusicbrainz.RecordingSearchResponse
 	var err error
 
-	for attempt := 1; attempt <= 3; attempt++ {
+	const maxAttempts = 3
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		resp, err = client.SearchRecording(query, 1, 0)
 
 		if err == nil {
 			break
 		}
 
-		slog.Warn(
+		log.Warn(
 			"musicbrainz recording search failed, retrying",
 			"attempt", attempt,
+			"max_attempts", maxAttempts,
+			"query", query,
 			"err", err,
-			"song", song.Title,
 		)
 
 		time.Sleep(time.Duration(attempt) * 5 * time.Second)
@@ -88,16 +102,12 @@ func GetSongInfo(song *types.TrackInfo) error {
 	}
 
 	if len(resp.Recordings) == 0 {
-		slog.Warn(
-			"no information found for song",
-			"song", song.Title,
-			"artists", song.Artists,
-		)
+		log.Warn("no information found for song")
 
 		return nil
 	}
 
-	slog.Debug(
+	log.Debug(
 		"recording found",
 		"title", resp.Recordings[0].Title,
 		"artists", song.Artists,

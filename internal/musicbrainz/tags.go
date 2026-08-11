@@ -13,6 +13,8 @@ import (
 )
 
 func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
+	log := slog.With("track_id", info.ID)
+
 	c := cases.Title(language.Und)
 
 	for _, tag := range tags {
@@ -38,13 +40,13 @@ func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
 
 		info.Genres = append(info.Genres, genreName)
 
-		slog.Debug(
+		log.Debug(
 			"genre added",
 			"genre", genreName,
 		)
 	}
 
-	slog.Debug(
+	log.Debug(
 		"artist tags resolved",
 		"genres", info.Genres,
 		"year", info.Year,

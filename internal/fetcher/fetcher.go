@@ -4,7 +4,8 @@ import (
 	"log/slog"
 	"path/filepath"
 	"strings"
-	"time"
+	"sync"
+	"sync/atomic"
 
 	"akerraps/tunectl/internal/cache"
 	"akerraps/tunectl/internal/types"
@@ -32,37 +33,67 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		"path", bin,
 	)
 
+	const workers = 3
+
 	total := len(tracks)
-	start := time.Now()
+	jobs := make(chan types.TrackInfo)
 
-	for i, song := range tracks {
-		current := i + 1
-		remaining := total - current
+	var wg sync.WaitGroup
+	var completed atomic.Int64
 
-		if err := processTrack(bin, song, opts); err != nil {
-			slog.Error(
-				"failed to process track",
-				"title", song.Title,
-				"err", err,
-			)
-		}
-
-		elapsed := time.Since(start)
-		avgPerTrack := elapsed / time.Duration(current)
-		eta := avgPerTrack * time.Duration(remaining)
-
-		slog.Info(
-			"track progress",
-			"current", current,
-			"total", total,
-			"remaining", remaining,
-			"elapsed", elapsed.Round(time.Second),
-			"eta", eta.Round(time.Second),
-		)
-
-		slog.Info("") // For reading log easily per song
-
+	// Assign a stable ID to each track based on its position in the input.
+	for i := range tracks {
+		tracks[i].ID = i + 1
 	}
+
+	// Start the worker pool.
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for song := range jobs {
+				log := slog.With(
+					"track_id", song.ID,
+					"title", song.Title,
+					"artists", song.Artists,
+				)
+
+				log.Debug("processing track")
+
+				if err := processTrack(bin, song, opts); err != nil {
+					log.Error(
+						"failed to process track",
+						"err", err,
+					)
+				}
+
+				current := int(completed.Add(1))
+				remaining := total - current
+
+				log.Info(
+					"track progress",
+					"current", current,
+					"total", total,
+					"remaining", remaining,
+				)
+
+				log.Debug("track processing finished")
+			}
+		}()
+	}
+
+	// Send all tracks to the worker pool.
+	for _, song := range tracks {
+		jobs <- song
+	}
+
+	// Signal that there are no more tracks to process.
+	close(jobs)
+
+	// Wait for all workers to finish.
+	wg.Wait()
 
 	return nil
 }
