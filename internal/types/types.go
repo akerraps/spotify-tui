@@ -6,12 +6,16 @@ import (
 )
 
 type TrackInfo struct {
+	ArtistID string
+
 	Title   string
 	Artists []string
 
 	Album string
 
 	Genres []string
+	Year   int
+	Tags   []string
 }
 
 type Options struct {

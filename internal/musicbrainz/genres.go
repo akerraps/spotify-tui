@@ -4,6 +4,7 @@ import (
 	"akerraps/tunectl/internal/types"
 	"log/slog"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/michiwend/gomusicbrainz"
@@ -11,50 +12,65 @@ import (
 	"golang.org/x/text/language"
 )
 
-func extractGenres(tags []gomusicbrainz.Tag, existing []string) []string {
-
-	c := cases.Title(language.Und) //Undefined lang.
-	names := make([]string, 0, len(tags))
+func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
+	c := cases.Title(language.Und)
 
 	for _, tag := range tags {
 		tagName := strings.ToLower(strings.TrimSpace(tag.Name))
 
-		isGenre := slices.Contains(types.GenreFamilies, tagName)
-		if !isGenre {
+		if tagName == "" {
 			continue
 		}
 
-		genreName := c.String(tagName)
-
-		exists := genreExists(names, genreName) ||
-			genreExists(existing, genreName)
-
-		slog.Debug(
-			"processing artist tag",
-			"tag", tag.Name,
-			"normalized", genreName,
-			"is_genre", isGenre,
-			"already_added", exists,
-		)
-
-		if exists {
+		if isYear(tagName) {
+			if info.Year == 0 {
+				info.Year, _ = strconv.Atoi(tagName)
+			}
 			continue
 		}
 
-		names = append(names, genreName)
+		if slices.Contains(types.GenreFamilies, tagName) {
+			genreName := c.String(tagName)
 
-		slog.Debug(
-			"genre added",
-			"genre", genreName,
-		)
+			if genreExists(info.Genres, genreName) {
+				continue
+			}
+
+			info.Genres = append(info.Genres, genreName)
+
+			slog.Debug(
+				"genre added",
+				"genre", genreName,
+			)
+
+			continue
+		}
+
+		if !slices.Contains(info.Tags, tagName) {
+			info.Tags = append(info.Tags, tagName)
+		}
 	}
 
 	slog.Debug(
-		"artist genres resolved",
-		"genres", names,
+		"artist tags resolved",
+		"genres", info.Genres,
+		"year", info.Year,
+		"tags", info.Tags,
 	)
+}
 
-	return names
+func isYear(value string) bool {
+	if len(value) != 4 {
+		return false
+	}
+
+	for _, r := range value {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+
+	return true
 }
 
 func genreExists(genres []string, candidate string) bool {

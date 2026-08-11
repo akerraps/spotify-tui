@@ -1,16 +1,17 @@
 package musicbrainz
 
 import (
+	"akerraps/tunectl/internal/types"
 	"log/slog"
 	"time"
 
 	"github.com/michiwend/gomusicbrainz"
 )
 
-func getArtistInfo(artistID string, genres []string) ([]string, error) {
+func getArtistInfo(info *types.TrackInfo) error {
 	slog.Debug(
 		"fetching artist information",
-		"artist_id", artistID,
+		"artist_id", info.ArtistID,
 	)
 
 	client := createClient()
@@ -19,7 +20,7 @@ func getArtistInfo(artistID string, genres []string) ([]string, error) {
 	var err error
 
 	for attempt := 1; attempt <= 3; attempt++ {
-		resp, err = client.SearchArtist("arid:"+artistID, 1, 0)
+		resp, err = client.SearchArtist("arid:"+info.ArtistID, 1, 0)
 
 		if err == nil {
 			break
@@ -29,26 +30,24 @@ func getArtistInfo(artistID string, genres []string) ([]string, error) {
 			"artist lookup failed, retrying",
 			"attempt", attempt,
 			"max_attempts", 3,
-			"artist_id", artistID,
+			"artist_id", info.ArtistID,
 			"err", err,
 		)
 
-		time.Sleep(time.Duration(attempt) * time.Second * 5)
+		time.Sleep(time.Duration(attempt) * 5 * time.Second)
 	}
 
 	if err != nil {
 		slog.Error(
 			"artist lookup failed",
-			"artist_id", artistID,
+			"artist_id", info.ArtistID,
 			"err", err,
 		)
 
-		return nil, err
+		return err
 	}
 
-	tags := resp.Artists[0].Tags
+	extractTags(resp.Artists[0].Tags, info)
 
-	names := extractGenres(tags, genres)
-
-	return names, nil
+	return nil
 }
