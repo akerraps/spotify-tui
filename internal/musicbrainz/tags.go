@@ -26,41 +26,28 @@ func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
 			if info.Year == 0 {
 				info.Year, _ = strconv.Atoi(tagName)
 			}
-			continue
-		}
-
-		if slices.Contains(types.GenreFamilies, tagName) {
-			genreName := c.String(tagName)
-
-			if valueExists(info.Genres, genreName) {
-				continue
-			}
-
-			info.Genres = append(info.Genres, genreName)
-
-			slog.Debug(
-				"genre added",
-				"genre", genreName,
-			)
 
 			continue
 		}
 
-		if !valueExists(info.Tags, tagName) {
-			info.Tags = append(info.Tags, tagName)
+		genreName := c.String(tagName)
 
-			slog.Debug(
-				"tag added",
-				"tag", tagName,
-			)
+		if valueExists(info.Genres, genreName) {
+			continue
 		}
+
+		info.Genres = append(info.Genres, genreName)
+
+		slog.Debug(
+			"genre added",
+			"genre", genreName,
+		)
 	}
 
 	slog.Debug(
 		"artist tags resolved",
 		"genres", info.Genres,
 		"year", info.Year,
-		"tags", info.Tags,
 	)
 }
 

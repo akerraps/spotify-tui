@@ -20,10 +20,6 @@ func writeMetadata(file string, song types.TrackInfo) {
 		tags[taglib.Date] = []string{strconv.Itoa(song.Year)}
 	}
 
-	if len(song.Tags) > 0 {
-		tags[taglib.Comment] = song.Tags
-	}
-
 	err := taglib.WriteTags(file, tags, 0)
 	if err != nil {
 		slog.Warn(
@@ -43,7 +39,6 @@ func writeMetadata(file string, song types.TrackInfo) {
 		"artists", song.Artists,
 		"genres", song.Genres,
 		"year", song.Year,
-		"tags", song.Tags,
 		"album", song.Album,
 	)
 }
