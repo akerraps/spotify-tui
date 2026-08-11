@@ -6,21 +6,35 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"akerraps/tunectl/internal/musicbrainz"
 	"akerraps/tunectl/internal/types"
+
+	"golang.org/x/text/unicode/norm"
 )
 
-func outputPath(song types.TrackInfo, OutputDir string) string {
-	fileName := strings.ToLower(
-		strings.ReplaceAll(
-			song.Title+"_"+song.Artists[0]+".mp3",
-			" ",
-			"_",
-		),
-	)
+func outputPath(song types.TrackInfo, outputDir string) string {
+	name := song.Title + "_" + song.Artists[0]
 
-	return filepath.Join(OutputDir, fileName)
+	name = norm.NFD.String(name)
+
+	var b strings.Builder
+
+	for _, r := range name {
+		if unicode.Is(unicode.Mn, r) {
+			continue
+		}
+
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == ' ' || r == '_' {
+			b.WriteRune(r)
+		}
+	}
+
+	name = strings.ToLower(b.String())
+	name = strings.ReplaceAll(name, " ", "_")
+
+	return filepath.Join(outputDir, name+".mp3")
 }
 
 func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
