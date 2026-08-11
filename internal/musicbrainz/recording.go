@@ -20,12 +20,16 @@ func searchQuery(song string, artists []string) (query string) {
 }
 
 func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchResponse, genres []string) error {
+	recording := resp.Recordings[0]
+
 	info.Artists = info.Artists[:0]
-	info.Title = resp.Recordings[0].Title
-	for _, credit := range resp.Recordings[0].ArtistCredit.NameCredits {
+	info.Title = recording.Title
+
+	for _, credit := range recording.ArtistCredit.NameCredits {
 		info.Artists = append(info.Artists, credit.Artist.Name)
 	}
-	artistId := string(resp.Recordings[0].ArtistCredit.NameCredits[0].Artist.ID)
+
+	artistId := string(recording.ArtistCredit.NameCredits[0].Artist.ID)
 
 	genres, err := getArtistInfo(artistId, genres)
 	if err != nil {
@@ -33,10 +37,12 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 	}
 
 	info.Genres = genres
+
 	slog.Debug(
 		"metadata enriched",
 		"title", info.Title,
 		"artists", info.Artists,
+		"album", info.Album,
 		"genres", info.Genres,
 	)
 

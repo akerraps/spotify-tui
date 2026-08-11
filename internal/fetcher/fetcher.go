@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"akerraps/tunectl/internal/cache"
 	"akerraps/tunectl/internal/types"
@@ -22,7 +23,6 @@ func songExists(path string) (bool, error) {
 
 func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 	bin, err := cache.GetYtDlp()
-
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,13 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		"path", bin,
 	)
 
-	for _, song := range tracks {
+	total := len(tracks)
+	start := time.Now()
+
+	for i, song := range tracks {
+		current := i + 1
+		remaining := total - current
+
 		if err := processTrack(bin, song, opts); err != nil {
 			slog.Error(
 				"failed to process track",
@@ -40,6 +46,23 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 				"err", err,
 			)
 		}
+
+		elapsed := time.Since(start)
+		avgPerTrack := elapsed / time.Duration(current)
+		eta := avgPerTrack * time.Duration(remaining)
+
+		slog.Info(
+			"track progress",
+			"current", current,
+			"total", total,
+			"remaining", remaining,
+			"elapsed", elapsed.Round(time.Second),
+			"eta", eta.Round(time.Second),
+		)
+
+		slog.Info("") // For reading log easily per song
+
 	}
+
 	return nil
 }
