@@ -48,7 +48,7 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 	return nil
 }
 
-func GetSongInfo(song types.TrackInfo) (info types.TrackInfo, err error) {
+func GetSongInfo(song *types.TrackInfo) error {
 	slog.Debug(
 		"searching musicbrainz recording",
 		"song", song.Title,
@@ -57,11 +57,10 @@ func GetSongInfo(song types.TrackInfo) (info types.TrackInfo, err error) {
 
 	client := createClient()
 
-	info = song
-
 	query := searchQuery(song.Title, song.Artists)
 
 	var resp *gomusicbrainz.RecordingSearchResponse
+	var err error
 
 	for attempt := 1; attempt <= 3; attempt++ {
 		resp, err = client.SearchRecording(query, 1, 0)
@@ -77,11 +76,11 @@ func GetSongInfo(song types.TrackInfo) (info types.TrackInfo, err error) {
 			"song", song.Title,
 		)
 
-		time.Sleep(time.Duration(attempt) * time.Second * 5)
+		time.Sleep(time.Duration(attempt) * 5 * time.Second)
 	}
 
 	if err != nil {
-		return info, fmt.Errorf(
+		return fmt.Errorf(
 			`cannot fetch "%s - %v" song data: %w`,
 			song.Title,
 			song.Artists,
@@ -95,18 +94,19 @@ func GetSongInfo(song types.TrackInfo) (info types.TrackInfo, err error) {
 			"song", song.Title,
 			"artists", song.Artists,
 		)
-		return info, nil
+
+		return nil
 	}
 
 	slog.Debug(
 		"recording found",
-		"title", info.Title,
-		"artists", info.Artists,
+		"title", resp.Recordings[0].Title,
+		"artists", song.Artists,
 	)
 
-	if err := enrichTrack(&info, resp); err != nil {
-		return info, err
+	if err := enrichTrack(song, resp); err != nil {
+		return err
 	}
 
-	return info, nil
+	return nil
 }

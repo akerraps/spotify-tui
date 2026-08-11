@@ -32,7 +32,7 @@ func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
 		if slices.Contains(types.GenreFamilies, tagName) {
 			genreName := c.String(tagName)
 
-			if genreExists(info.Genres, genreName) {
+			if valueExists(info.Genres, genreName) {
 				continue
 			}
 
@@ -46,8 +46,13 @@ func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
 			continue
 		}
 
-		if !slices.Contains(info.Tags, tagName) {
+		if !valueExists(info.Tags, tagName) {
 			info.Tags = append(info.Tags, tagName)
+
+			slog.Debug(
+				"tag added",
+				"tag", tagName,
+			)
 		}
 	}
 
@@ -73,16 +78,10 @@ func isYear(value string) bool {
 	return true
 }
 
-func genreExists(genres []string, candidate string) bool {
-	candidate = strings.ToLower(candidate)
+func valueExists(values []string, candidate string) bool {
+	candidate = strings.ToLower(strings.TrimSpace(candidate))
 
-	for _, genre := range genres {
-		genre = strings.ToLower(genre)
-
-		if genre == candidate {
-			return true
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(values, func(value string) bool {
+		return strings.ToLower(strings.TrimSpace(value)) == candidate
+	})
 }

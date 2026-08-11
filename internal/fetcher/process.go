@@ -58,18 +58,13 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 			"artists", song.Artists,
 		)
 
-		info, err := musicbrainz.GetSongInfo(song)
-		if err != nil {
+		if err := musicbrainz.GetSongInfo(&song); err != nil {
 			slog.Warn(
 				"failed to fetch metadata, using original data",
 				"title", song.Title,
 				"artists", song.Artists,
 				"err", err,
 			)
-		} else {
-			song.Title = info.Title
-			song.Artists = info.Artists
-			song.Genres = append(song.Genres, info.Genres...)
 		}
 	}
 
