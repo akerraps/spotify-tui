@@ -18,6 +18,7 @@ func songsCommand() *urfave.Command {
 		Flags: []urfave.Flag{
 			outputFlag(),
 			noAPIFlag(),
+			parallelFlag(),
 		},
 
 		Action: songsAction,

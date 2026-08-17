@@ -4,7 +4,6 @@ import (
 	"akerraps/tunectl/internal/types"
 	"log/slog"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/michiwend/gomusicbrainz"
@@ -21,14 +20,6 @@ func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
 		tagName := strings.ToLower(strings.TrimSpace(tag.Name))
 
 		if tagName == "" {
-			continue
-		}
-
-		if isYear(tagName) {
-			if info.Year == 0 {
-				info.Year, _ = strconv.Atoi(tagName)
-			}
-
 			continue
 		}
 
@@ -49,22 +40,7 @@ func extractTags(tags []gomusicbrainz.Tag, info *types.TrackInfo) {
 	log.Debug(
 		"artist tags resolved",
 		"genres", info.Genres,
-		"year", info.Year,
 	)
-}
-
-func isYear(value string) bool {
-	if len(value) != 4 {
-		return false
-	}
-
-	for _, r := range value {
-		if r < '0' || r > '9' {
-			return false
-		}
-	}
-
-	return true
 }
 
 func valueExists(values []string, candidate string) bool {

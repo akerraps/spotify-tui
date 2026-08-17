@@ -1,9 +1,9 @@
 package fetcher
 
 import (
+	"errors"
 	"log/slog"
-	"path/filepath"
-	"strings"
+	"os"
 	"sync"
 	"sync/atomic"
 
@@ -12,14 +12,17 @@ import (
 )
 
 func songExists(path string) (bool, error) {
-	prefix := strings.TrimSuffix(path, filepath.Ext(path))
+	_, err := os.Stat(path)
 
-	matches, err := filepath.Glob(prefix + ".*")
-	if err != nil {
-		return false, err
+	if err == nil {
+		return true, nil
 	}
 
-	return len(matches) > 0, nil
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+
+	return false, err
 }
 
 func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
@@ -33,7 +36,7 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		"path", bin,
 	)
 
-	const workers = 3
+	workers := opts.Parallelism
 
 	total := len(tracks)
 	jobs := make(chan types.TrackInfo)

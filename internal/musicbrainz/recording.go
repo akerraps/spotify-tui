@@ -50,7 +50,6 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 		"artists", info.Artists,
 		"album", info.Album,
 		"genres", info.Genres,
-		"year", info.Year,
 	)
 
 	return nil

@@ -2,7 +2,6 @@ package fetcher
 
 import (
 	"log/slog"
-	"strconv"
 
 	"akerraps/tunectl/internal/types"
 
@@ -23,10 +22,6 @@ func writeMetadata(file string, song types.TrackInfo) {
 		taglib.Title:  {song.Title},
 	}
 
-	if song.Year != 0 {
-		tags[taglib.Date] = []string{strconv.Itoa(song.Year)}
-	}
-
 	err := taglib.WriteTags(file, tags, 0)
 	if err != nil {
 		log.Warn(
@@ -41,7 +36,6 @@ func writeMetadata(file string, song types.TrackInfo) {
 	log.Debug(
 		"metadata written",
 		"genres", song.Genres,
-		"year", song.Year,
 		"album", song.Album,
 	)
 }

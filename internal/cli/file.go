@@ -32,6 +32,7 @@ func fileCommand() *urfave.Command {
 			},
 			outputFlag(),
 			noAPIFlag(),
+			parallelFlag(),
 		},
 
 		Action: fileAction,

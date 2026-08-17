@@ -22,19 +22,50 @@ func noAPIFlag() urfave.Flag {
 	}
 }
 
+func parallelFlag() urfave.Flag {
+	return &urfave.IntFlag{
+		Name:    "paralelism",
+		Aliases: []string{"n"},
+		Usage:   "Amount of parallel downloads",
+	}
+}
+
 func buildOptions(c *urfave.Context) types.Options {
 	opts := types.DefaultOptions()
 
 	if out := c.String("output"); out != "" {
 		opts.OutputDir = out
+
+		slog.Debug(
+			"using custom output directory",
+			"output_dir", opts.OutputDir,
+		)
 	} else {
-		slog.Warn(
-			"output directory not specified, using default",
+		slog.Debug(
+			"using default output directory",
 			"output_dir", opts.OutputDir,
 		)
 	}
 
+	if c.IsSet("paralelism") {
+		opts.Parallelism = c.Int("paralelism")
+
+		slog.Debug(
+			"using custom parallelism",
+			"parallelism", opts.Parallelism,
+		)
+	} else {
+		slog.Debug(
+			"using default parallelism",
+			"parallelism", opts.Parallelism,
+		)
+	}
+
 	opts.NoAPI = c.Bool("no-api")
+
+	if opts.NoAPI {
+		slog.Debug("musicbrainz metadata lookup disabled")
+	}
 
 	return opts
 }

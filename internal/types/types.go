@@ -16,12 +16,12 @@ type TrackInfo struct {
 	Album string
 
 	Genres []string
-	Year   int
 }
 
 type Options struct {
-	OutputDir string
-	NoAPI     bool
+	OutputDir   string
+	NoAPI       bool
+	Parallelism int
 }
 
 func DefaultOptions() Options {
@@ -30,7 +30,8 @@ func DefaultOptions() Options {
 	ouputDir := fmt.Sprintf("/home/%s/Music", currentUser.Username)
 
 	return Options{
-		OutputDir: ouputDir,
-		NoAPI:     false,
+		OutputDir:   ouputDir,
+		NoAPI:       false,
+		Parallelism: 3,
 	}
 }
