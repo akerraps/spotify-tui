@@ -18,12 +18,14 @@ func fileCommand() *urfave.Command {
 
 		Flags: []urfave.Flag{
 			&urfave.BoolFlag{
-				Name:  "csv",
-				Usage: "Read tracks from CSV",
+				Name:               "csv",
+				Usage:              "Read tracks from CSV",
+				DisableDefaultText: true,
 			},
 			&urfave.BoolFlag{
-				Name:  "json",
-				Usage: "Read tracks from JSON",
+				Name:               "json",
+				Usage:              "Read tracks from JSON",
+				DisableDefaultText: true,
 			},
 			&urfave.StringFlag{
 				Name:    "data",

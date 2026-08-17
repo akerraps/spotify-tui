@@ -32,6 +32,6 @@ func DefaultOptions() Options {
 	return Options{
 		OutputDir:   ouputDir,
 		NoAPI:       false,
-		Parallelism: 3,
+		Parallelism: 1,
 	}
 }

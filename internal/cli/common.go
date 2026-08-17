@@ -27,6 +27,7 @@ func parallelFlag() urfave.Flag {
 		Name:    "paralelism",
 		Aliases: []string{"n"},
 		Usage:   "Amount of parallel downloads",
+		Value:   1,
 	}
 }
 
