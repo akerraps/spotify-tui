@@ -4,6 +4,8 @@ import (
 	"akerraps/tunectl/internal/types"
 	"log/slog"
 
+	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 	urfave "github.com/urfave/cli/v2"
 )
 
@@ -34,16 +36,13 @@ func parallelFlag() urfave.Flag {
 func buildOptions(c *urfave.Context) types.Options {
 	opts := types.DefaultOptions()
 
+	readEnv(&opts)
+
 	if out := c.String("output"); out != "" {
 		opts.OutputDir = out
 
 		slog.Debug(
-			"using custom output directory",
-			"output_dir", opts.OutputDir,
-		)
-	} else {
-		slog.Debug(
-			"using default output directory",
+			"overriding output directory with CLI option",
 			"output_dir", opts.OutputDir,
 		)
 	}
@@ -52,21 +51,47 @@ func buildOptions(c *urfave.Context) types.Options {
 		opts.Parallelism = c.Int("paralelism")
 
 		slog.Debug(
-			"using custom parallelism",
+			"overriding parallelism with CLI option",
 			"parallelism", opts.Parallelism,
 		)
-	} else {
+	}
+
+	if c.IsSet("no-api") {
+		opts.NoAPI = c.Bool("no-api")
+
 		slog.Debug(
-			"using default parallelism",
-			"parallelism", opts.Parallelism,
+			"overriding no-api with CLI option",
+			"no_api", opts.NoAPI,
 		)
 	}
 
-	opts.NoAPI = c.Bool("no-api")
-
-	if opts.NoAPI {
-		slog.Debug("musicbrainz metadata lookup disabled")
-	}
+	slog.Debug(
+		"final options",
+		"output_dir", opts.OutputDir,
+		"no_api", opts.NoAPI,
+		"parallelism", opts.Parallelism,
+	)
 
 	return opts
+}
+
+func readEnv(opts *types.Options) {
+	if err := godotenv.Load(); err != nil {
+		slog.Debug(
+			"no .env file found",
+			"error", err,
+		)
+	} else {
+		slog.Debug("loaded variables from .env")
+	}
+
+	if err := envconfig.Process("TUNECTL", opts); err != nil {
+		slog.Debug(
+			"failed to process environment configuration",
+			"error", err,
+		)
+		return
+	}
+
+	slog.Debug("processed environment configuration")
 }

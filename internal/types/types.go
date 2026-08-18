@@ -6,23 +6,22 @@ import (
 )
 
 type TrackInfo struct {
-	ID   int
-	MBID string
+	ID int
 
+	MBID     string
 	ArtistID string
 
 	Title   string
 	Artists []string
-
-	Album string
+	Album   string
 
 	Genres []string
 }
 
 type Options struct {
-	OutputDir   string
-	NoAPI       bool
-	Parallelism int
+	OutputDir   string `envconfig:"OUTPUT_DIR"`
+	NoAPI       bool   `envconfig:"NO_API"`
+	Parallelism int    `envconfig:"PARALLELISM"`
 }
 
 func DefaultOptions() Options {
