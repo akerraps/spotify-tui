@@ -6,7 +6,8 @@ import (
 )
 
 type TrackInfo struct {
-	ID int
+	ID   int
+	MBID string
 
 	ArtistID string
 

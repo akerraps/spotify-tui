@@ -16,10 +16,11 @@ func writeMetadata(file string, song types.TrackInfo) {
 	)
 
 	tags := map[string][]string{
-		taglib.Album:  {song.Album},
-		taglib.Artist: song.Artists,
-		taglib.Genre:  song.Genres,
-		taglib.Title:  {song.Title},
+		taglib.Album:              {song.Album},
+		taglib.Artist:             song.Artists,
+		taglib.Genre:              song.Genres,
+		taglib.Title:              {song.Title},
+		taglib.MusicBrainzTrackID: {song.MBID},
 	}
 
 	err := taglib.WriteTags(file, tags, 0)

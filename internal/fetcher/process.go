@@ -85,6 +85,7 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 
 	cmd := exec.Command(
 		bin,
+		"--extractor-args", "youtube:player_client=web_embedded",
 		"-x",
 		"--restrict-filenames",
 		"--quiet",
@@ -97,10 +98,12 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 		"-o", output,
 	)
 
-	if _, err := cmd.Output(); err != nil {
+	cmdOutput, err := cmd.CombinedOutput()
+	if err != nil {
 		log.Error(
 			"download failed",
 			"err", err,
+			"output", string(cmdOutput),
 		)
 
 		return nil

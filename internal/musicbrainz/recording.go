@@ -40,6 +40,8 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 		recording.ArtistCredit.NameCredits[0].Artist.ID,
 	)
 
+	info.MBID = string(recording.ID)
+
 	if err := getArtistInfo(info); err != nil {
 		return err
 	}
@@ -50,6 +52,7 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 		"artists", info.Artists,
 		"album", info.Album,
 		"genres", info.Genres,
+		"mbid", info.MBID,
 	)
 
 	return nil
