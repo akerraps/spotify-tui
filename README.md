@@ -1,132 +1,149 @@
-# Tunectl – Terminal Music Downloader & Metadata Tool
+# tunectl
 
-`tunectl` is a personal learning project written in Go.
+Terminal music downloader written in Go.
 
-The goal of this project is to explore the design of a terminal-based tool capable of resolving music metadata and downloading audio tracks using external sources.
+Uses `yt-dlp` for downloading and MusicBrainz for optional metadata lookup.
 
-It is not intended to be a production-ready application. The codebase is experimental and subject to frequent changes and refactoring.
+## Installation
 
-## Overview
-
-`tunectl` is a terminal tool for downloading individual songs using yt-dlp, with optional metadata enrichment via external APIs.
-
-It operates in two modes:
-
-### API-enabled mode
-
-When enabled, the input is enriched using music metadata services (MusicBrainz public API). This can normalize artist names, fix typos, and complete missing fields before building the final download query.
-
-The downside is that incorrect metadata resolution **may lead to downloading a different track than intended**, since the final match depends on external sources.
-
-### No-API mode
-
-When disabled, no metadata enrichment is performed. The raw input is used directly to build a search query, which is then passed to yt-dlp to download the first matching result.
-
-## CLI Usage
-
-The main command provided by tunectl is `songs`, which is used to download tracks directly from the terminal.
-
-Basic usage:
+Build the binary:
 
 ```bash
-tunectl songs "song;artist;genre"
+    go build -o tunectl ./cmd/tunectl
 ```
 
-Each input is a semicolon-separated string with the following structure:
-
-song: track name
-artist: artist name(s). Multiple values can be provided as a comma-separated, quoted list.
-genre: optional genre tag used for filtering or enrichment
-
-Multiple songs can be provided in a single command:
+Or run it directly:
 
 ```bash
-songs tunectl "Title 1;Artist 1;Genre" "Title 2;Artist 2;Genre"
+    go run ./cmd/tunectl
 ```
 
-When multiple entries are passed, each one is processed independently.
+## Configuration
 
-### Metadata behavior
+Configuration can be provided through environment variables or CLI options.
 
-By default, tunectl runs in API-enabled mode.
+Environment variables use the `TUNECTL_` prefix:
 
-In this mode:
+```env
+    TUNECTL_OUTPUT_DIR=/home/user/Music
+    TUNECTL_NO_API=false
+    TUNECTL_PARALLELISM=1
+```
 
-- song and artist fields are enriched using external metadata sources
-- misspellings and incomplete inputs may be corrected
-- additional metadata may be resolved via MusicBrainz
+CLI options override environment variables.
 
-If the `--no-api` flag is used, metadata enrichment is disabled.
+### Options
 
-Important note:
+| Option         | Alias | Description                         | Default   |
+| -------------- | ----- | ----------------------------------- | --------- |
+| `--output`     | `-o`  | Output directory                    | `~/Music` |
+| `--no-api`     |       | Disable MusicBrainz metadata lookup | `false`   |
+| `--paralelism` | `-n`  | Number of parallel downloads        | `1`       |
+
+## Download songs
+
+The main command is `songs`.
+
+```bash
+    tunectl songs "Title;Artist"
+```
+
+A genre can optionally be specified:
+
+```bash
+    tunectl songs "Title;Artist;Genre"
+```
+
+Multiple artists can be specified as a comma-separated list:
+
+```bash
+    tunectl songs "Title;Artist 1, Artist 2"
+```
+
+Multiple songs can be downloaded in a single command:
+
+```bash
+    tunectl songs \
+      "Song 1;Artist 1" \
+      "Song 2;Artist 2" \
+      "Song 3;Artist 3"
+```
+
+### Examples
+
+Download a song:
+
+```bash
+    tunectl songs "Alchemy;Philip Sayce"
+```
+
+Specify a genre:
+
+```bash
+    tunectl songs "Alchemy;Philip Sayce;Blues"
+```
+
+Specify an output directory:
+
+```bash
+    tunectl songs -o ~/Music "Alchemy;Philip Sayce"
+```
+
+Download multiple tracks in parallel:
+
+```bash
+    tunectl songs -n 4 \
+      "Song 1;Artist 1" \
+      "Song 2;Artist 2"
+```
+
+## Metadata lookup
+
+By default, `tunectl` uses the MusicBrainz API to resolve track metadata before downloading.
+
+For example:
+
+```bash
+    tunectl songs "Alchemy;Ska P"
+```
+
+MusicBrainz can resolve the artist and track information before generating the download query.
+
+To disable metadata lookup:
+
+```bash
+    tunectl songs --no-api "Alchemy;Philip Sayce"
+```
+
+When the API is disabled, the original input is used directly.
 
 > [!WARNING]
-> If API mode is enabled, all fields may be replaced by resolved metadata except genre, which is always appended to the API results.
+> MusicBrainz resolution is not guaranteed to return the intended recording. An incorrect match can result in downloading a different track.
 
-## Download behavior
+## File input
 
-All downloads are handled through `yt-dlp` as the backend extractor.
+Tracks can also be loaded from CSV or JSON files using the `file` command.
 
-If no output directory is specified, files are saved to:
-
-```
-/home/<user>/Music
-```
-
-The output directory can be overridden via CLI flags.
-
-## Cache management
-
-Tunectl stores the `yt-dlp` binary in the user’s local cache directory.
-
-A cache management command is provided:
+### CSV
 
 ```bash
-tunectl cache --clear
+    tunectl file --csv --data songs.csv
 ```
 
-This removes the cached `yt-dlp` binary.
-
-This is intended as a recovery mechanism in cases where:
-
-- the downloaded `yt-dlp` binary becomes corrupted
-- upstream changes in `yt-dlp` require a fresh binary
-- download failures occur due to outdated cached versions
-
-On the next execution, `tunectl` will automatically re-download the latest available version of `yt-dlp` from the official repository.
-
-## File input usage (CSV / JSON)
-
-Tunectl supports downloading songs from structured files using the `file` command.
-
-This mode allows batch processing of tracks defined in a CSV or JSON file.
-
-### CSV mode
-
-Use the `--csv` flag and provide a file path via `--data`:
-
-```bash
-tunectl file --csv --data songs.csv
-```
-
-Each CSV row must follow this format:
+Example:
 
 ```csv
-Title,Artists,Album
-What the Funk,"Gustavo Mota, Naizon",What the Funk
+    Title,Artists,Album
+    What the Funk,"Gustavo Mota, Naizon",What the Funk
 ```
 
-Additional columns are ignored
+Additional columns are ignored.
 
-### JSON mode
+### JSON
 
-Use the `--json` flag and provide a JSON file via `--data`:
+    tunectl file --json --data songs.json
 
-```bash
-tunectl file --json --data songs.json
-```
-
-The JSON file must contain an array of certain objects:
+Example:
 
 ```json
 [
@@ -138,17 +155,53 @@ The JSON file must contain an array of certain objects:
 ]
 ```
 
-## Future work
+## Cache
 
-The project is still in early development. The following features are planned:
+`tunectl` automatically downloads and caches the `yt-dlp` binary.
 
-- [ ] Terminal UI (TUI): A terminal interface that becomes the default behavior when running tunectl without arguments.
-- [ ] Persistent cache (SQLite): The system will prefer local data over API calls when available, reducing external dependencies over time.
-- [ ] Playlist downloads: Support downloading full playlists from YouTube URLs.
-- [ ] Album downloads: Support resolving and downloading full albums using
+Clear the cached binary with:
 
-## Notes
+```bash
+    tunectl cache --clear
+```
 
-This project is primarily a learning exercise in Go, CLI design, and external tool integration.
-Behavior is intentionally simple and favors direct execution over strict correctness guarantees.
-Metadata resolution is heuristic and may produce incorrect matches in some cases.
+The next execution will download `yt-dlp` again.
+
+This can be useful if the cached binary is corrupted or outdated.
+
+## Debugging
+
+Enable debug logs with:
+
+```bash
+    tunectl --debug songs "Alchemy;Philip Sayce"
+```
+
+This displays information about configuration, metadata lookup, downloads, and other internal operations.
+
+## Command reference
+
+### `songs`
+
+Download one or more songs.
+
+```
+    tunectl songs [OPTIONS] SONG...
+```
+
+### `file`
+
+Download songs from a CSV or JSON file.
+
+```
+    tunectl file --csv --data FILE
+    tunectl file --json --data FILE
+```
+
+### `cache`
+
+Manage the local `yt-dlp` cache.
+
+```
+    tunectl cache --clear
+```
