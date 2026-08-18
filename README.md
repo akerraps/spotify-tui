@@ -20,14 +20,14 @@ Or run it directly:
 
 ## Configuration
 
-Configuration can be provided through environment variables or CLI options.
+Configuration can be provided through a `.env` file or CLI options.
 
-Environment variables use the `TUNECTL_` prefix:
+Create a `.env` file in the working directory:
 
 ```env
-    TUNECTL_OUTPUT_DIR=/home/user/Music
-    TUNECTL_NO_API=false
-    TUNECTL_PARALLELISM=1
+TUNECTL_OUTPUT_DIR=/home/user/Music
+TUNECTL_NO_API=false
+TUNECTL_PARALLELISM=1
 ```
 
 CLI options override environment variables.
@@ -104,7 +104,7 @@ By default, `tunectl` uses the MusicBrainz API to resolve track metadata before 
 For example:
 
 ```bash
-    tunectl songs "Alchemy;Ska P"
+    tunectl songs "Alchemy;Philip sayce"
 ```
 
 MusicBrainz can resolve the artist and track information before generating the download query.
@@ -133,8 +133,8 @@ Tracks can also be loaded from CSV or JSON files using the `file` command.
 Example:
 
 ```csv
-    Title,Artists,Album
-    What the Funk,"Gustavo Mota, Naizon",What the Funk
+    Title,Artists,Album,Genre
+    What the Funk,"Gustavo Mota, Naizon",What the Funk,Electronic
 ```
 
 Additional columns are ignored.
@@ -150,10 +150,13 @@ Example:
   {
     "Title": "Title",
     "Artists": ["Artist 1", "Artist 2"],
-    "Album": "Album"
+    "Album": "Album",
+    "Genre": "Rock"
   }
 ]
 ```
+
+Genre is optional and is used as part of the track metadata.
 
 ## Cache
 
