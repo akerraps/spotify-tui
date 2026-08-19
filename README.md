@@ -137,24 +137,53 @@ When the API is disabled, the original input is used directly.
 
 Tracks can also be loaded from CSV or JSON files using the `file` command.
 
+The `--data` option accepts either a **single file** or a **directory**. When a directory is provided, all files with the corresponding extension are processed.
+
 ### CSV
+
+Single file:
 
 ```bash
     tunectl file --csv --data songs.csv
 ```
 
+Directory:
+
+```bash
+    tunectl file --csv --data ./songs/
+```
+
 Example:
 
 ```csv
-    Title,Artists,Album,Genre
-    What the Funk,"Gustavo Mota, Naizon",What the Funk,Electronic
+Title,Artists,Album,Genre
+What the Funk,"Gustavo Mota, Naizon",What the Funk,Electronic
 ```
+
+The required columns are:
+
+- `Title`
+- `Artists`
+- `Album`
+- `Genre`
+
+Multiple artists and genres can be separated by commas.
 
 Additional columns are ignored.
 
 ### JSON
 
+Single file:
+
+```bash
     tunectl file --json --data songs.json
+```
+
+Directory:
+
+```bash
+    tunectl file --json --data ./songs/
+```
 
 Example:
 
@@ -169,7 +198,7 @@ Example:
 ]
 ```
 
-Genre is optional and is used as part of the track metadata.
+`Genre` is optional and is used as part of the track metadata.
 
 ## Cache
 
