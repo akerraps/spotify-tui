@@ -18,7 +18,7 @@ Or run it directly:
     go run ./cmd/tunectl
 ```
 
-##Configuration
+## Configuration
 
 Configuration can be provided through an environment file and CLI options.
 
@@ -30,7 +30,7 @@ By default, tunectl looks for a .env file in the current working directory:
     TUNECTL_PARALLELISM=1
 ```
 
-A different environment file can be specified with the --environment (-e) option:
+A different environment file can be specified with the `--environment` (`-e`) option:
 
 ```bash
     tunectl songs -e ~/.env.tunectl "Title;Artist"
@@ -46,11 +46,12 @@ Configuration priority:
 
 ### Options
 
-| Option         | Alias | Description                         | Default   |
-| -------------- | ----- | ----------------------------------- | --------- |
-| `--output`     | `-o`  | Output directory                    | `~/Music` |
-| `--no-api`     |       | Disable MusicBrainz metadata lookup | `false`   |
-| `--paralelism` | `-n`  | Number of parallel downloads        | `1`       |
+| Option          | Alias | Description                         | Default   |
+| --------------- | ----- | ----------------------------------- | --------- |
+| `--environment` | `-e`  | Path to the environment file        | `.env`    |
+| `--output`      | `-o`  | Output directory                    | `~/Music` |
+| `--no-api`      |       | Disable MusicBrainz metadata lookup | `false`   |
+| `--paralelism`  | `-n`  | Number of parallel downloads        | `1`       |
 
 ## Download songs
 
