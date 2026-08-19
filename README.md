@@ -18,19 +18,31 @@ Or run it directly:
     go run ./cmd/tunectl
 ```
 
-## Configuration
+##Configuration
 
-Configuration can be provided through a `.env` file or CLI options.
+Configuration can be provided through an environment file and CLI options.
 
-Create a `.env` file in the working directory:
+By default, tunectl looks for a .env file in the current working directory:
 
 ```env
-TUNECTL_OUTPUT_DIR=/home/user/Music
-TUNECTL_NO_API=false
-TUNECTL_PARALLELISM=1
+    TUNECTL_OUTPUT_DIR=/home/user/Music
+    TUNECTL_NO_API=false
+    TUNECTL_PARALLELISM=1
 ```
 
-CLI options override environment variables.
+A different environment file can be specified with the --environment (-e) option:
+
+```bash
+    tunectl songs -e ~/.env.tunectl "Title;Artist"
+```
+
+CLI options override values loaded from the environment file.
+
+Configuration priority:
+
+1- Default values
+2- Environment file
+3- CLI options
 
 ### Options
 
