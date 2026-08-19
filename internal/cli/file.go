@@ -33,6 +33,7 @@ func fileCommand() *urfave.Command {
 				Usage:   "Input file path",
 			},
 			outputFlag(),
+			envFlag(),
 			noAPIFlag(),
 			parallelFlag(),
 		},

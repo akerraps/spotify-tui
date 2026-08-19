@@ -22,6 +22,7 @@ type Options struct {
 	OutputDir   string `envconfig:"OUTPUT_DIR"`
 	NoAPI       bool   `envconfig:"NO_API"`
 	Parallelism int    `envconfig:"PARALLELISM"`
+	EnvFile     string `envconfig:"PARALLELISM"`
 }
 
 func DefaultOptions() Options {
@@ -33,5 +34,6 @@ func DefaultOptions() Options {
 		OutputDir:   ouputDir,
 		NoAPI:       false,
 		Parallelism: 1,
+		EnvFile:     ".env",
 	}
 }

@@ -17,6 +17,15 @@ func outputFlag() urfave.Flag {
 	}
 }
 
+func envFlag() urfave.Flag {
+	return &urfave.StringFlag{
+		Name:    "environment",
+		Aliases: []string{"e"},
+		Usage:   "Path to the environment file",
+		Value:   ".env",
+	}
+}
+
 func noAPIFlag() urfave.Flag {
 	return &urfave.BoolFlag{
 		Name:  "no-api",
@@ -35,6 +44,15 @@ func parallelFlag() urfave.Flag {
 
 func buildOptions(c *urfave.Context) types.Options {
 	opts := types.DefaultOptions()
+
+	if envFile := c.String("environment"); envFile != "" {
+		opts.EnvFile = envFile
+
+		slog.Debug(
+			"overriding environment file with CLI option",
+			"env_file", opts.EnvFile,
+		)
+	}
 
 	readEnv(&opts)
 
@@ -76,13 +94,13 @@ func buildOptions(c *urfave.Context) types.Options {
 }
 
 func readEnv(opts *types.Options) {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Overload(opts.EnvFile); err != nil {
 		slog.Debug(
-			"no .env file found",
+			"failed to load environment file",
+			"file", opts.EnvFile,
 			"error", err,
 		)
-	} else {
-		slog.Debug("loaded variables from .env")
+		return
 	}
 
 	if err := envconfig.Process("TUNECTL", opts); err != nil {
@@ -90,8 +108,5 @@ func readEnv(opts *types.Options) {
 			"failed to process environment configuration",
 			"error", err,
 		)
-		return
 	}
-
-	slog.Debug("processed environment configuration")
 }
