@@ -18,6 +18,18 @@ Or run it directly:
     go run ./cmd/tunectl
 ```
 
+### Dependencies
+
+The following dependencies are required:
+
+- `go`
+- `gcc`
+- `gopls`
+- `delve`
+- `python3`
+- `ffmpeg`
+- `nodejs`
+
 ## Configuration
 
 Configuration can be provided through an environment file and CLI options.
@@ -27,6 +39,7 @@ By default, tunectl looks for a .env file in the current working directory:
 ```env
     TUNECTL_OUTPUT_DIR=/home/user/Music
     TUNECTL_NO_API=false
+    TUNECTL_REWRITE_METADATA=false
     TUNECTL_PARALLELISM=1
 ```
 
@@ -46,12 +59,13 @@ Configuration priority:
 
 ### Options
 
-| Option          | Alias | Description                         | Default   |
-| --------------- | ----- | ----------------------------------- | --------- |
-| `--environment` | `-e`  | Path to the environment file        | `.env`    |
-| `--output`      | `-o`  | Output directory                    | `~/Music` |
-| `--no-api`      |       | Disable MusicBrainz metadata lookup | `false`   |
-| `--paralelism`  | `-n`  | Number of parallel downloads        | `1`       |
+| Option               | Alias | Description                                          | Default   |
+| -------------------- | ----- | ---------------------------------------------------- | --------- |
+| `--environment`      | `-e`  | Path to the environment file                         | `.env`    |
+| `--output`           | `-o`  | Output directory                                     | `~/Music` |
+| `--no-api`           |       | Disable MusicBrainz metadata lookup                  | `false`   |
+| `--rewrite-metadata` |       | Rewrite metadata of existing songs using MusicBrainz | `false`   |
+| `--paralelism`       | `-n`  | Number of parallel downloads                         | `1`       |
 
 ## Download songs
 
@@ -132,6 +146,16 @@ When the API is disabled, the original input is used directly.
 
 > [!WARNING]
 > MusicBrainz resolution is not guaranteed to return the intended recording. An incorrect match can result in downloading a different track.
+
+### Existing songs
+
+By default, `tunectl` skips songs that already exist in the output directory.
+
+To rewrite the metadata of an existing song, use `--rewrite-metadata`:
+
+```bash
+    tunectl songs --rewrite-metadata "Alchemy;Philip Sayce"
+```
 
 ## File input
 
@@ -249,4 +273,8 @@ Manage the local `yt-dlp` cache.
 
 ```
     tunectl cache --clear
+```
+
+```
+
 ```
