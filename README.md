@@ -274,7 +274,3 @@ Manage the local `yt-dlp` cache.
 ```
     tunectl cache --clear
 ```
-
-```
-
-```

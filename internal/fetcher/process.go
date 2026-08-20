@@ -44,8 +44,6 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 		"artists", song.Artists,
 	)
 
-	log.Debug("processing track")
-
 	output := outputPath(song, opts.OutputDir)
 
 	exists, err := songExists(output)
@@ -84,7 +82,7 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 	}
 
 	search := fmt.Sprintf(
-		`ytsearch:"%s" %s "song"`,
+		`ytsearch:%s %s song`,
 		song.Title,
 		strings.Join(song.Artists, " "),
 	)
