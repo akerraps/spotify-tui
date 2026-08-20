@@ -53,6 +53,17 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 		return err
 	}
 
+	// Skip existing songs unless metadata rewriting was requested.
+	if exists && !opts.RewriteMetadata {
+		log.Info("song already exists, skipping")
+		return nil
+	}
+
+	if exists {
+		log.Debug("song already exists, rewriting metadata")
+	}
+
+	// Fetch metadata only when the API is enabled.
 	if !opts.NoAPI {
 		log.Debug("fetching metadata from api")
 
@@ -64,11 +75,11 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 		}
 	}
 
+	// Existing song: only rewrite metadata.
 	if exists {
-		log.Info("song already exists")
-
 		writeMetadata(output, song)
 
+		log.Info("metadata rewritten")
 		return nil
 	}
 
