@@ -35,6 +35,7 @@ func fileCommand() *urfave.Command {
 			outputFlag(),
 			envFlag(),
 			noAPIFlag(),
+			rewriteMetadataFlag(),
 			parallelFlag(),
 		},
 

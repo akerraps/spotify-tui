@@ -12,8 +12,8 @@ import (
 func buildOptions(c *urfave.Context) types.Options {
 	opts := types.DefaultOptions()
 
-	if envFile := c.String("environment"); envFile != "" {
-		opts.EnvFile = envFile
+	if c.IsSet("environment") {
+		opts.EnvFile = c.String("environment")
 
 		slog.Debug(
 			"overriding environment file with CLI option",
@@ -50,10 +50,20 @@ func buildOptions(c *urfave.Context) types.Options {
 		)
 	}
 
+	if c.IsSet("rewrite-metadata") {
+		opts.RewriteMetadata = c.Bool("rewrite-metadata")
+
+		slog.Debug(
+			"overriding rewrite-metadata with CLI option",
+			"rewrite-metadata", opts.RewriteMetadata,
+		)
+	}
+
 	slog.Debug(
 		"final options",
 		"output_dir", opts.OutputDir,
 		"no_api", opts.NoAPI,
+		"rewrite-metadata", opts.RewriteMetadata,
 		"parallelism", opts.Parallelism,
 	)
 

@@ -19,10 +19,11 @@ type TrackInfo struct {
 }
 
 type Options struct {
-	OutputDir   string `envconfig:"OUTPUT_DIR"`
-	NoAPI       bool   `envconfig:"NO_API"`
-	Parallelism int    `envconfig:"PARALLELISM"`
-	EnvFile     string `envconfig:"PARALLELISM"`
+	OutputDir       string `envconfig:"OUTPUT_DIR"`
+	NoAPI           bool   `envconfig:"NO_API"`
+	Parallelism     int    `envconfig:"PARALLELISM"`
+	EnvFile         string `envconfig:"PARALLELISM"`
+	RewriteMetadata bool   `envconfig:"REWRITE_METADATA"`
 }
 
 func DefaultOptions() Options {
@@ -31,9 +32,10 @@ func DefaultOptions() Options {
 	ouputDir := fmt.Sprintf("/home/%s/Music", currentUser.Username)
 
 	return Options{
-		OutputDir:   ouputDir,
-		NoAPI:       false,
-		Parallelism: 1,
-		EnvFile:     ".env",
+		OutputDir:       ouputDir,
+		NoAPI:           false,
+		Parallelism:     1,
+		EnvFile:         ".env",
+		RewriteMetadata: false,
 	}
 }

@@ -28,6 +28,13 @@ func noAPIFlag() urfave.Flag {
 	}
 }
 
+func rewriteMetadataFlag() urfave.Flag {
+	return &urfave.BoolFlag{
+		Name:  "rewrite-metadata",
+		Usage: "Rewrite metadata of existing songs using the MusicBrainz API",
+	}
+}
+
 func parallelFlag() urfave.Flag {
 	return &urfave.IntFlag{
 		Name:    "paralelism",

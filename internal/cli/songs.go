@@ -19,6 +19,7 @@ func songsCommand() *urfave.Command {
 			outputFlag(),
 			envFlag(),
 			parallelFlag(),
+			rewriteMetadataFlag(),
 			noAPIFlag(),
 		},
 
