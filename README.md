@@ -20,15 +20,23 @@ Or run it directly:
 
 ### Dependencies
 
-The following dependencies are required:
+#### Development
 
-- `go`
-- `gcc`
-- `gopls`
-- `delve`
-- `python3`
-- `ffmpeg`
-- `nodejs`
+Required to build and develop TuneCTL:
+
+* `go`
+* `gcc`
+* `gopls`
+* `delve`
+
+#### Runtime
+
+Required by `yt-dlp` to download and process media:
+
+* `python3`
+* `ffmpeg`
+* `nodejs`
+
 
 ## Configuration
 
