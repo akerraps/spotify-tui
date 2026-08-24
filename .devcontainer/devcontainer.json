@@ -1,0 +1,8 @@
+{
+  "name": "tunectl",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "tunectl",
+  "workspaceFolder": "/workspaces/tunectl",
+  "remoteUser": "vscode",
+  "postCreateCommand": "cd /workspaces/tunectl && go mod download"
+}

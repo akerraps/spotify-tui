@@ -1,0 +1,17 @@
+services:
+  tunectl:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: tunectl-dev
+    volumes:
+      - ..:/workspaces/tunectl:cached
+      - ~/.gitconfig:/home/vscode/.gitconfig:ro
+      - ~/.ssh:/home/vscode/.ssh:ro
+      - go-cache:/go
+    working_dir: /workspaces/tunectl
+    command: sleep infinity
+    user: vscode
+
+volumes:
+  go-cache:
