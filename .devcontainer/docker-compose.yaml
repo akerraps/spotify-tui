@@ -8,10 +8,7 @@ services:
       - ..:/workspaces/tunectl:cached
       - ~/.gitconfig:/home/vscode/.gitconfig:ro
       - ~/.ssh:/home/vscode/.ssh:ro
-      - go-cache:/go
+      - ~/Music:/home/vscode/Music
     working_dir: /workspaces/tunectl
     command: sleep infinity
     user: vscode
-
-volumes:
-  go-cache:

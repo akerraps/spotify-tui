@@ -36,6 +36,7 @@ Required by `yt-dlp` to download and process media:
 * `python3`
 * `ffmpeg`
 * `nodejs`
+* `deno`
 
 
 ## Configuration
