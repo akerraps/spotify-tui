@@ -42,6 +42,12 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 
 	info.MBID = string(recording.ID)
 
+	if info.Album == "" {
+		if err := getAlbumInfo(info); err != nil {
+			return err
+		}
+	}
+	
 	if err := getArtistInfo(info); err != nil {
 		return err
 	}
