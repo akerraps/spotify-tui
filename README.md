@@ -38,6 +38,52 @@ Required by `yt-dlp` to download and process media:
 * `nodejs`
 * `deno`
 
+## Run with Docker
+
+TuneCTL can also be built and run using Docker.
+
+The provided `Dockerfile` uses a multi-stage build. The first stage clones the repository and compiles TuneCTL, while the second stage creates the runtime image with the dependencies required by `yt-dlp`.
+
+Build the image locally:
+
+```bash
+docker build -t tunectl .
+```
+
+The repository and version can be customized using build arguments:
+
+```bash
+docker build \
+  --build-arg TUNECTL_VERSION=main \
+  -t tunectl .
+```
+
+By default, the Dockerfile builds the main branch of the configured repository.
+
+### Run TuneCTL
+
+```bash
+docker run --rm tunectl songs "Alchemy;Philip Sayce"
+```
+
+To persist downloaded music, mount an output directory:
+
+```bash
+docker run --rm \
+  -v "$(pwd):/out" \
+  tunectl songs -o /out "Alchemy;Philip Sayce"
+```
+
+Input files can also be mounted into the container:
+
+```bash
+docker run --rm \
+  -v "$(pwd)/music:/out" \
+  -v "$(pwd)/tunectl-files:/input" \
+  tunectl file --csv --data /input/ -o /out
+```
+
+The Docker image runs TuneCTL as a non-root user.
 
 ## Configuration
 
@@ -271,7 +317,7 @@ Download one or more songs.
 
 Download songs from a CSV or JSON file.
 
-```
+```bash
     tunectl file --csv --data FILE
     tunectl file --json --data FILE
 ```
@@ -280,6 +326,6 @@ Download songs from a CSV or JSON file.
 
 Manage the local `yt-dlp` cache.
 
-```
+```bash
     tunectl cache --clear
 ```
