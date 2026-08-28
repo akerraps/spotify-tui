@@ -31,6 +31,8 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 		return err
 	}
 
+	cache.InitDatabase()
+
 	slog.Debug(
 		"using yt-dlp binary",
 		"path", bin,

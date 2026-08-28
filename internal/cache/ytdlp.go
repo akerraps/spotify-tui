@@ -4,20 +4,17 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"github.com/hashicorp/go-getter"
 )
 
 func GetYtDlp() (string, error) {
-	currentUser, err := user.Current()
-	if err != nil {
-		return "", fmt.Errorf("cannot get current user: %w", err)
-	}
-
 	binary := "yt-dlp"
-	cachePath := fmt.Sprintf("/home/%s/.cache/tunectl/", currentUser.Username)
+	cachePath, err := getCachePath()
+	if err != nil {
+		return "", fmt.Errorf("cannot get cache path: %w", err)
+	}
 	path := filepath.Join(cachePath, binary)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -31,12 +28,7 @@ func GetYtDlp() (string, error) {
 			"dir", cachePath,
 		)
 
-		if err := os.MkdirAll(cachePath, 0o755); err != nil {
-			slog.Error(
-				"failed to create cache directory",
-				"dir", cachePath,
-				"err", err,
-			)
+		if err := createCacheDir(cachePath); err != nil {
 			return "", fmt.Errorf("cannot create cache dir: %w", err)
 		}
 
@@ -45,6 +37,7 @@ func GetYtDlp() (string, error) {
 			"url", "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
 			"dest", path,
 		)
+	
 		if err := getter.GetAny(cachePath, "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"); err != nil {
 			slog.Error(
 				"failed to download yt-dlp",
@@ -74,13 +67,12 @@ func GetYtDlp() (string, error) {
 }
 
 func ClearYtDlp() error {
-	currentUser, err := user.Current()
-	if err != nil {
-		return fmt.Errorf("cannot get current user: %w", err)
-	}
-
 	binary := "yt-dlp"
-	cachePath := fmt.Sprintf("/home/%s/.cache/tunectl/", currentUser.Username)
+	cachePath, err := getCachePath()
+	if err != nil {
+		return fmt.Errorf("cannot get cache path: %w", err)
+	}
+	
 	path := filepath.Join(cachePath, binary)
 
 	slog.Info(
@@ -89,11 +81,6 @@ func ClearYtDlp() error {
 	)
 
 	if err := os.Remove(path); err != nil {
-		slog.Error(
-			"failed to remove yt-dlp binary",
-			"path", path,
-			"err", err,
-		)
 		return fmt.Errorf("unable to remove %s: %w", path, err)
 	}
 	return nil
