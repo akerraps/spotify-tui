@@ -9,7 +9,7 @@ services:
       - ~/.gitconfig:/home/vscode/.gitconfig:ro
       - ~/.ssh:/home/vscode/.ssh:ro
       - ~/Music:/home/vscode/Music
-      - ~/.cache/tunectl:/home/vscode/.cache/tunectl
+      #- ~/.cache/tunectl:/home/vscode/.cache/tunectl
     working_dir: /workspaces/tunectl
     command: sleep infinity
     user: vscode

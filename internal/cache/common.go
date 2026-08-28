@@ -21,3 +21,25 @@ func createCacheDir(path string) error {
 	}
 	return nil
 }
+
+func InitCache()(bin string, err error ){
+	cachePath, err := getCachePath()
+	if err != nil {
+		return "", fmt.Errorf("cannot get cache path: %w", err)
+	}
+	
+	if err := createCacheDir(cachePath); err != nil {
+		return "", fmt.Errorf("cannot create cache dir: %w", err)
+	}
+
+	if err := InitDatabase(); err != nil {
+		return "", fmt.Errorf("cannot init database: %w", err)
+	}
+	
+	bin, err = getYtDlp(cachePath)
+	if err != nil {
+    return "", fmt.Errorf("cannot initialize yt-dlp: %w", err)
+	}
+	
+	return bin, nil
+}

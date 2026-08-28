@@ -26,12 +26,10 @@ func songExists(path string) (bool, error) {
 }
 
 func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
-	bin, err := cache.GetYtDlp()
+	bin, err := cache.InitCache()
 	if err != nil {
 		return err
 	}
-
-	cache.InitDatabase()
 
 	slog.Debug(
 		"using yt-dlp binary",
