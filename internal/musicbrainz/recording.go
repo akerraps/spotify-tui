@@ -36,7 +36,7 @@ func enrichTrack(info *types.TrackInfo, resp *gomusicbrainz.RecordingSearchRespo
 		info.Artists = append(info.Artists, credit.Artist.Name)
 	}
 
-	info.ArtistID = string(
+	info.ArtistMBID = string(
 		recording.ArtistCredit.NameCredits[0].Artist.ID,
 	)
 

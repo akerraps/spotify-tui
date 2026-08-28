@@ -18,14 +18,13 @@ type recordingLookupResponse struct {
 }
 
 type release struct {
-	ID    string `xml:"id,attr"`
-	Title string `xml:"title"`
-
+	ID     string `xml:"id,attr"`
+	Title  string `xml:"title"`
 	Status string `xml:"status"`
 
 	ReleaseGroup struct {
-		PrimaryType   string   `xml:"primary-type"`
-		SecondaryType []string `xml:"secondary-type-list>secondary-type"`
+		ID          string `xml:"id,attr"`
+		PrimaryType string `xml:"primary-type"`
 	} `xml:"release-group"`
 }
 
@@ -60,7 +59,9 @@ func getAlbumInfo(info *types.TrackInfo) error {
 			"err", err,
 		)
 
-		time.Sleep(time.Duration(attempt) * 5 * time.Second)
+		if attempt < maxAttempts {
+			time.Sleep(time.Duration(attempt) * 5 * time.Second)
+		}
 	}
 
 	if err != nil {
@@ -68,7 +69,7 @@ func getAlbumInfo(info *types.TrackInfo) error {
 	}
 
 	if len(resp.Recording.Releases) == 0 {
-		log.Warn("no album found")
+		log.Warn("no releases found")
 		return nil
 	}
 
@@ -78,11 +79,14 @@ func getAlbumInfo(info *types.TrackInfo) error {
 			release.ReleaseGroup.PrimaryType == "Album" {
 
 			info.Album = release.Title
+			info.AlbumMBID = release.ReleaseGroup.ID
 
 			log.Debug(
 				"album found",
 				"album", info.Album,
+				"album_mbid", info.AlbumMBID,
 				"release_id", release.ID,
+				"status", release.Status,
 			)
 
 			return nil
@@ -93,11 +97,14 @@ func getAlbumInfo(info *types.TrackInfo) error {
 	for _, release := range resp.Recording.Releases {
 		if release.ReleaseGroup.PrimaryType == "Album" {
 			info.Album = release.Title
+			info.AlbumMBID = release.ReleaseGroup.ID
 
 			log.Debug(
 				"album found",
 				"album", info.Album,
+				"album_mbid", info.AlbumMBID,
 				"release_id", release.ID,
+				"status", release.Status,
 			)
 
 			return nil
@@ -105,12 +112,17 @@ func getAlbumInfo(info *types.TrackInfo) error {
 	}
 
 	// Last resort: use the first release.
-	info.Album = resp.Recording.Releases[0].Title
+	firstRelease := resp.Recording.Releases[0]
+
+	info.Album = firstRelease.Title
+	info.AlbumMBID = firstRelease.ReleaseGroup.ID
 
 	log.Debug(
-		"release found, no album available",
+		"release found, using release title as album",
 		"album", info.Album,
-		"release_id", resp.Recording.Releases[0].ID,
+		"album_mbid", info.AlbumMBID,
+		"release_id", firstRelease.ID,
+		"status", firstRelease.Status,
 	)
 
 	return nil
@@ -123,7 +135,9 @@ func lookupRecordingReleases(mbid string) (*recordingLookupResponse, error) {
 	)
 
 	query := url.Values{}
-	query.Set("inc", "releases")
+
+	// Request releases together with their release groups.
+	query.Set("inc", "releases+release-groups")
 	query.Set("fmt", "xml")
 
 	req, err := http.NewRequest(

@@ -18,7 +18,7 @@ func getArtistInfo(info *types.TrackInfo) error {
 
 	log.Debug(
 		"fetching artist information",
-		"artist_id", info.ArtistID,
+		"artist_id", info.ArtistMBID,
 	)
 
 	client := createClient()
@@ -29,7 +29,7 @@ func getArtistInfo(info *types.TrackInfo) error {
 	const maxAttempts = 3
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		resp, err = client.SearchArtist("arid:"+info.ArtistID, 1, 0)
+		resp, err = client.SearchArtist("arid:"+info.ArtistMBID, 1, 0)
 
 		if err == nil {
 			break
@@ -39,7 +39,7 @@ func getArtistInfo(info *types.TrackInfo) error {
 			"artist lookup failed, retrying",
 			"attempt", attempt,
 			"max_attempts", maxAttempts,
-			"artist_id", info.ArtistID,
+			"artist_id", info.ArtistMBID,
 			"err", err,
 		)
 
@@ -49,7 +49,7 @@ func getArtistInfo(info *types.TrackInfo) error {
 	if err != nil {
 		log.Error(
 			"artist lookup failed",
-			"artist_id", info.ArtistID,
+			"artist_id", info.ArtistMBID,
 			"err", err,
 		)
 

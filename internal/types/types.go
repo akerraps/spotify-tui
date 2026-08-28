@@ -9,7 +9,8 @@ type TrackInfo struct {
 	ID int
 
 	MBID     string
-	ArtistID string
+	ArtistMBID string
+	AlbumMBID string
 
 	Title   string
 	Artists []string
