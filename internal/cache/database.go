@@ -3,63 +3,103 @@ package cache
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"path/filepath"
 
 	_ "modernc.org/sqlite"
 )
 
-var db *sql.DB
-
-func InitDatabase()  error {
+func OpenDatabase() (*sql.DB, error) {
 	cachePath, err := getCachePath()
-	dbPath := filepath.Join(cachePath, "tunectl.sqlite")
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("cannot get cache path: %w", err)
 	}
 	
-	db, err = sql.Open("sqlite", dbPath)
+	dbPath := filepath.Join(cachePath, "tunectl.sqlite")
+
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func initDatabase(db *sql.DB) (err error) {
+	ctx := context.Background()
+
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS genres (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL UNIQUE
+		);
+	`)
 	if err != nil {
 		return err
 	}
-	_, err = db.ExecContext(
-		context.Background(),
-		`CREATE TABLE IF NOT EXISTS artists (
+
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS artists (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			name TEXT NOT NULL, 
-			artistmbid TEXT NOT NULL UNIQUE
-		)`,
-	)
+			artist_mbid TEXT NOT NULL UNIQUE
+		);
+	`)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.ExecContext(
-		context.Background(),
-		`CREATE TABLE IF NOT EXISTS albums (
-         id INTEGER PRIMARY KEY AUTOINCREMENT,
-         artistid INTEGER NOT NULL,
-         name TEXT NOT NULL,
-         CONSTRAINT fk_artistid
-            FOREIGN KEY (artistid) REFERENCES artists(id)
-		);`,
-	)
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS artist_genres (
+			artist_id INTEGER NOT NULL,
+			genre_id INTEGER NOT NULL,
+			PRIMARY KEY (artist_id, genre_id),
+			FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE,
+			FOREIGN KEY (genre_id) REFERENCES genres(id) ON DELETE CASCADE
+		);
+	`)
 	if err != nil {
 		return err
 	}
-	
-	_, err = db.ExecContext(
-		context.Background(),
-		`CREATE TABLE IF NOT EXISTS songs (
+
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS albums (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			artist_id INTEGER NOT NULL,
+			name TEXT NOT NULL,
+			album_mbid TEXT NOT NULL UNIQUE,
+			FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE
+		);
+	`)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS songs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			albumid INTEGER NOT NULL,
+			album_id INTEGER NOT NULL,
 			title TEXT NOT NULL, 
 			mbid TEXT NOT NULL UNIQUE,
-			CONSTRAINT fk_albumid FOREIGN KEY (id) REFERENCES albums(id)
-		)`,
-	)
+			FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE
+		);
+	`)
 	if err != nil {
 		return err
 	}
-	
+
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS song_artists (
+			song_id INTEGER NOT NULL,
+			artist_id INTEGER NOT NULL,
+			PRIMARY KEY (song_id, artist_id),
+			FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE,
+			FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE
+		);
+	`)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

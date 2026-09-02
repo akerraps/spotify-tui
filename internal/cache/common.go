@@ -32,7 +32,12 @@ func InitCache()(bin string, err error ){
 		return "", fmt.Errorf("cannot create cache dir: %w", err)
 	}
 
-	if err := InitDatabase(); err != nil {
+	db, err := OpenDatabase()
+	if err != nil {
+		return "", fmt.Errorf("cannot open database: %w", err)
+	}
+	
+	if err := initDatabase(db); err != nil {
 		return "", fmt.Errorf("cannot init database: %w", err)
 	}
 	
@@ -40,6 +45,8 @@ func InitCache()(bin string, err error ){
 	if err != nil {
     return "", fmt.Errorf("cannot initialize yt-dlp: %w", err)
 	}
+	
+	defer db.Close()
 	
 	return bin, nil
 }
