@@ -75,7 +75,7 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 
 	// Existing song: only rewrite metadata.
 	if exists {
-		writeMetadata(output, song)
+		writeMetadata(output, &song)
 
 		log.Info("metadata rewritten")
 		return nil
@@ -120,7 +120,7 @@ func processTrack(bin string, song types.TrackInfo, opts types.Options) error {
 
 	log.Info("download completed")
 
-	writeMetadata(output, song)
+	writeMetadata(output, &song)
 
 	return nil
 }

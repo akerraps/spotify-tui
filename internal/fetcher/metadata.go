@@ -8,7 +8,7 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func writeMetadata(file string, song types.TrackInfo) {
+func writeMetadata(file string, song *types.TrackInfo) {
 	log := slog.With(
 		"track_id", song.ID,
 		"title", song.Title,

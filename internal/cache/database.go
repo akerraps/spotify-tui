@@ -78,7 +78,7 @@ func initDatabase(db *sql.DB) (err error) {
 	_, err = db.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS songs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
-			album_id INTEGER NOT NULL,
+			album_id INTEGER,
 			title TEXT NOT NULL, 
 			mbid TEXT NOT NULL UNIQUE,
 			FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE

@@ -82,7 +82,6 @@ func FetchAudio(tracks []types.TrackInfo, opts types.Options) error {
 					"remaining", remaining,
 				)
 
-				log.Debug("track processing finished")
 			}
 		}()
 	}
